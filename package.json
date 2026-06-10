@@ -1,0 +1,8 @@
+{
+  "name": "uvits-prescritores",
+  "version": "1.0.0",
+  "description": "Landing page Uvits Pro Prescritor",
+  "dependencies": {
+    "resend": "^3.2.0"
+  }
+}
