@@ -2,6 +2,11 @@ const { Resend } = require('resend');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Configuráveis via variáveis de ambiente no Vercel
+const FROM_EMAIL = process.env.FROM_EMAIL || 'contato@uvits.com.br';
+const TO_EMAIL   = process.env.TO_EMAIL   || 'contato@uvits.com.br';
+const FROM_NAME  = process.env.FROM_NAME  || 'Uvits Pro Prescritor';
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -19,7 +24,7 @@ module.exports = async function handler(req, res) {
   try {
     // Email de confirmação para o prescritor
     await resend.emails.send({
-      from: 'Uvits Pro Prescritor <contato@uvits.com.br>',
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: email,
       subject: 'Cadastro recebido — Uvits Pro Prescritor',
       html: `
@@ -80,8 +85,8 @@ module.exports = async function handler(req, res) {
 
     // Email de aviso para a Uvits
     await resend.emails.send({
-      from: 'Uvits Pro Prescritor <contato@uvits.com.br>',
-      to: 'contato@uvits.com.br',
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: TO_EMAIL,
       subject: `🆕 Novo prescritor: ${nome}`,
       html: `
         <!DOCTYPE html>
