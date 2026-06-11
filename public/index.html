@@ -522,23 +522,49 @@
   </div>
 
   <script>
+    // Proteção contra duplo submit
+    let enviando = false;
+
+    // Validações no cliente (espelham o servidor — defesa em profundidade)
+    const EMAIL_REGEX    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const WHATSAPP_REGEX = /^[\d\s\-()+]{7,20}$/;
+
+    function sanitizarInput(valor, maxLen) {
+      return String(valor || '').trim().slice(0, maxLen);
+    }
+
     async function enviarFormulario() {
-      const btn   = document.getElementById('btn-submit');
-      const erro  = document.getElementById('form-error');
-      const nome      = document.getElementById('nome').value.trim();
-      const email     = document.getElementById('email').value.trim();
-      const whatsapp  = document.getElementById('whatsapp').value.trim();
-      const profissao = document.getElementById('profissao').value;
-      const conselho  = document.getElementById('conselho').value.trim();
+      if (enviando) return;
+
+      const btn    = document.getElementById('btn-submit');
+      const erro   = document.getElementById('form-error');
+
+      const nome      = sanitizarInput(document.getElementById('nome').value, 120);
+      const email     = sanitizarInput(document.getElementById('email').value, 254).toLowerCase();
+      const whatsapp  = sanitizarInput(document.getElementById('whatsapp').value, 30);
+      const profissao = sanitizarInput(document.getElementById('profissao').value, 60);
+      const conselho  = sanitizarInput(document.getElementById('conselho').value, 60);
 
       erro.style.display = 'none';
 
-      if (!nome || !email) {
-        erro.textContent = 'Por favor, preencha nome e e-mail.';
+      // Validação local
+      if (nome.length < 3) {
+        erro.textContent = 'Por favor, informe seu nome completo.';
+        erro.style.display = 'block';
+        return;
+      }
+      if (!EMAIL_REGEX.test(email)) {
+        erro.textContent = 'Por favor, informe um e-mail válido.';
+        erro.style.display = 'block';
+        return;
+      }
+      if (whatsapp && !WHATSAPP_REGEX.test(whatsapp)) {
+        erro.textContent = 'Número de WhatsApp inválido.';
         erro.style.display = 'block';
         return;
       }
 
+      enviando = true;
       btn.disabled = true;
       btn.textContent = 'Enviando...';
 
@@ -549,16 +575,21 @@
           body: JSON.stringify({ nome, email, whatsapp, profissao, conselho })
         });
 
-        if (!res.ok) throw new Error('Erro no servidor');
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Erro no servidor');
+        }
 
         document.getElementById('form-fields').style.display = 'none';
         document.getElementById('form-success').style.display = 'block';
 
       } catch (e) {
-        erro.textContent = 'Ocorreu um erro. Por favor, tente novamente.';
+        erro.textContent = e.message || 'Ocorreu um erro. Por favor, tente novamente.';
         erro.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Quero me cadastrar →';
+        enviando = false;
       }
     }
   </script>
