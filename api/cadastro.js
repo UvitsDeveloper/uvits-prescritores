@@ -44,10 +44,7 @@ function sanitize(value, maxLength = 200) {
 const EMAIL_REGEX    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const WHATSAPP_REGEX = /^[\d\s\-()+]{7,20}$/;
 
-const PROFISSOES_VALIDAS = [
-  'Médico(a)', 'Nutricionista', 'Farmacêutico(a)', 'Enfermeiro(a)',
-  'Fisioterapeuta', 'Biomédico(a)', 'Educador(a) Físico', 'Psicólogo(a)', 'Outro', ''
-];
+const PROFISSOES_VALIDAS = ['Médico(a)', 'Nutricionista'];
 
 function validar(dados) {
   const erros = [];
@@ -58,11 +55,14 @@ function validar(dados) {
   if (!dados.email || !EMAIL_REGEX.test(dados.email))
     erros.push('E-mail inválido.');
 
-  if (dados.whatsapp && !WHATSAPP_REGEX.test(dados.whatsapp))
-    erros.push('Número de WhatsApp inválido.');
+  if (!dados.whatsapp || !WHATSAPP_REGEX.test(dados.whatsapp))
+    erros.push('WhatsApp é obrigatório e deve ser válido.');
 
-  if (dados.profissao && !PROFISSOES_VALIDAS.includes(dados.profissao))
-    erros.push('Profissão inválida.');
+  if (!dados.conselho || dados.conselho.length < 4)
+    erros.push('Número do conselho (CRM ou CRN) é obrigatório.');
+
+  if (!dados.profissao || !PROFISSOES_VALIDAS.includes(dados.profissao))
+    erros.push('Profissão deve ser Médico(a) ou Nutricionista.');
 
   return erros;
 }
@@ -102,7 +102,7 @@ module.exports = async function handler(req, res) {
   const conselho  = sanitize(req.body?.conselho,    60);
 
   // Validação
-  const erros = validar({ nome, email, whatsapp, profissao });
+  const erros = validar({ nome, email, whatsapp, profissao, conselho });
   if (erros.length > 0)
     return res.status(400).json({ error: erros.join(' ') });
 
