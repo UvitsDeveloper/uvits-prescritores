@@ -26,7 +26,7 @@
     /* ── HERO ── */
     .hero {
       position: relative;
-      min-height: 520px;
+      min-height: 640px;
       display: flex;
       align-items: flex-end;
       background: var(--dark);
@@ -178,7 +178,7 @@
     .form-section { border-bottom: 1px solid var(--border); }
     .form-section .container { display: grid; grid-template-columns: 1fr 1fr; }
     .form-section__left  { padding: 64px 5% 64px 0; border-right: 1px solid var(--border); }
-    .form-section__right { padding: 64px 0 64px 5%; background: var(--cream); display: flex; align-items: flex-start; padding-top: 64px; }
+    .form-section__right { padding: 64px 5%; background: var(--cream); display: flex; align-items: center; justify-content: center; }
     .steps { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
     .step  { display: flex; align-items: flex-start; gap: 12px; }
     .step__num {
@@ -452,17 +452,17 @@
                 <input type="tel" id="whatsapp" placeholder="(11) 99999-9999" required>
               </div>
               <div class="field">
-                <label for="conselho">Nº do conselho *</label>
-                <input type="text" id="conselho" placeholder="CRM 123456/SP ou CRN-3 12345" required>
+                <label for="profissao">Profissão *</label>
+                <select id="profissao" required onchange="atualizarConselho()">
+                  <option value="">Selecione...</option>
+                  <option>Médico(a)</option>
+                  <option>Nutricionista</option>
+                </select>
               </div>
             </div>
             <div class="field">
-              <label for="profissao">Profissão *</label>
-              <select id="profissao" required>
-                <option value="">Selecione...</option>
-                <option>Médico(a)</option>
-                <option>Nutricionista</option>
-              </select>
+              <label for="conselho" id="conselho-label">Nº do conselho *</label>
+              <input type="text" id="conselho" placeholder="Selecione sua profissão primeiro" required disabled>
             </div>
             <button class="btn-submit" id="btn-submit" onclick="enviarFormulario()">
               Quero me cadastrar →
@@ -521,6 +521,28 @@
 
     function sanitizarInput(valor, maxLen) {
       return String(valor || '').trim().slice(0, maxLen);
+    }
+
+    // Ajusta o campo de conselho conforme a profissão selecionada
+    function atualizarConselho() {
+      const prof   = document.getElementById('profissao').value;
+      const label  = document.getElementById('conselho-label');
+      const input  = document.getElementById('conselho');
+
+      if (prof === 'Médico(a)') {
+        label.textContent  = 'Número do CRM *';
+        input.placeholder  = 'CRM 123456/SP';
+        input.disabled     = false;
+      } else if (prof === 'Nutricionista') {
+        label.textContent  = 'Número do CRN *';
+        input.placeholder  = 'CRN-3 12345';
+        input.disabled     = false;
+      } else {
+        label.textContent  = 'Nº do conselho *';
+        input.placeholder  = 'Selecione sua profissão primeiro';
+        input.value        = '';
+        input.disabled     = true;
+      }
     }
 
     async function enviarFormulario() {
