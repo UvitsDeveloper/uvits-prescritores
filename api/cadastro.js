@@ -1,5 +1,7 @@
 const { Resend } = require('resend');
 const { sql }    = require('@vercel/postgres');
+const { limitarCadastro } = require('./_ratelimit');
+const { registrarUso }    = require('./_usage');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -7,25 +9,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.FROM_EMAIL || 'contato@uvits.com.br';
 const TO_EMAIL   = process.env.TO_EMAIL   || 'contato@uvits.com.br';
 const FROM_NAME  = process.env.FROM_NAME  || 'Uvits Pro Prescritor';
-
-// ── Rate limiting simples em memória (por IP) ─────────────────────────────────
-// Reseta a cada 1 hora. Para produção de alto volume, substituir por Redis.
-const rateLimit = new Map();
-const RATE_LIMIT_MAX      = 5;   // máx. submissões por IP
-const RATE_LIMIT_WINDOW   = 60 * 60 * 1000; // 1 hora em ms
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = rateLimit.get(ip);
-
-  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
-    rateLimit.set(ip, { count: 1, windowStart: now });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT_MAX) return false;
-  entry.count++;
-  return true;
-}
 
 // ── Sanitização: remove tags HTML e limita tamanho ───────────────────────────
 function sanitize(value, maxLength = 200) {
@@ -81,6 +64,9 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  await registrarUso(req); // medidor de uso cross-projeto (não bloqueia)
+
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Método não permitido' });
 
@@ -91,7 +77,7 @@ module.exports = async function handler(req, res) {
 
   // Rate limiting por IP
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-  if (!checkRateLimit(ip))
+  if (!(await limitarCadastro(ip)))
     return res.status(429).json({ error: 'Muitas tentativas. Tente novamente em 1 hora.' });
 
   // Sanitização de todos os campos

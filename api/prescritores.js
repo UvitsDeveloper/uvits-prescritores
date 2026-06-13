@@ -1,5 +1,6 @@
 const { sql }      = require('@vercel/postgres');
 const { autenticar } = require('./_auth');
+const { registrarUso } = require('./_usage');
 
 module.exports = async function handler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -11,6 +12,8 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  await registrarUso(req); // medidor de uso cross-projeto (não bloqueia)
 
   // Todas as rotas exigem autenticação
   const usuario = autenticar(req, res);

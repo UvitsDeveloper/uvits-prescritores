@@ -1,0 +1,15 @@
+# Dependências (instaladas pela Vercel a partir do package.json/lock)
+node_modules/
+
+# Variáveis de ambiente (nunca commitar segredos)
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel
+
+# Logs e SO
+*.log
+.DS_Store
+Thumbs.db

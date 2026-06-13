@@ -1,30 +1,11 @@
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const { sql } = require('@vercel/postgres');
+const { limitarLogin } = require('./_ratelimit');
+const { registrarUso } = require('./_usage');
 
 const JWT_SECRET  = process.env.JWT_SECRET;
 const JWT_EXPIRES = '8h';
-
-// ── Rate limiting simples em memória (por IP) ─────────────────────────────────
-// Protege o login contra brute-force / password spraying.
-// NOTA: em serverless o estado não é compartilhado entre instâncias — para
-// proteção robusta migrar para Vercel KV / Redis (ver backlog de segurança).
-const rateLimit = new Map();
-const RATE_LIMIT_MAX    = 10;             // máx. tentativas por IP
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutos em ms
-
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const entry = rateLimit.get(ip);
-
-  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
-    rateLimit.set(ip, { count: 1, windowStart: now });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT_MAX) return false;
-  entry.count++;
-  return true;
-}
 
 module.exports = async function handler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -36,6 +17,9 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  await registrarUso(req); // medidor de uso cross-projeto (não bloqueia)
+
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Método não permitido' });
 
@@ -44,7 +28,7 @@ module.exports = async function handler(req, res) {
 
   // Rate limiting por IP — antes de qualquer trabalho pesado (bcrypt/DB)
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-  if (!checkRateLimit(ip))
+  if (!(await limitarLogin(ip)))
     return res.status(429).json({ error: 'Muitas tentativas. Tente novamente em alguns minutos.' });
 
   const email = String(req.body?.email || '').trim().toLowerCase().slice(0, 254);
