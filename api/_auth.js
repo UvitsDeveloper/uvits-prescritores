@@ -14,7 +14,7 @@ function autenticar(req, res) {
   }
 
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    return jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
   } catch (err) {
     res.status(401).json({ error: 'Token inválido ou expirado' });
     return null;

@@ -5,6 +5,27 @@ const { sql } = require('@vercel/postgres');
 const JWT_SECRET  = process.env.JWT_SECRET;
 const JWT_EXPIRES = '8h';
 
+// ── Rate limiting simples em memória (por IP) ─────────────────────────────────
+// Protege o login contra brute-force / password spraying.
+// NOTA: em serverless o estado não é compartilhado entre instâncias — para
+// proteção robusta migrar para Vercel KV / Redis (ver backlog de segurança).
+const rateLimit = new Map();
+const RATE_LIMIT_MAX    = 10;             // máx. tentativas por IP
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutos em ms
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const entry = rateLimit.get(ip);
+
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
+    rateLimit.set(ip, { count: 1, windowStart: now });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -20,6 +41,11 @@ module.exports = async function handler(req, res) {
 
   if (!JWT_SECRET)
     return res.status(500).json({ error: 'Configuração de servidor incompleta' });
+
+  // Rate limiting por IP — antes de qualquer trabalho pesado (bcrypt/DB)
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+  if (!checkRateLimit(ip))
+    return res.status(429).json({ error: 'Muitas tentativas. Tente novamente em alguns minutos.' });
 
   const email = String(req.body?.email || '').trim().toLowerCase().slice(0, 254);
   const senha = String(req.body?.senha || '').slice(0, 200);
@@ -49,7 +75,7 @@ module.exports = async function handler(req, res) {
     const token = jwt.sign(
       { id: usuario.id, nome: usuario.nome, email: usuario.email },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES }
+      { expiresIn: JWT_EXPIRES, algorithm: 'HS256' }
     );
 
     return res.status(200).json({
