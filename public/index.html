@@ -308,6 +308,28 @@
     .trust-item__title { font-size: 11px; font-weight: 700; color: #fff; }
     .trust-item__sub   { font-size: 10px; color: rgba(255,255,255,.75); }
 
+    /* ── FOOTER ── */
+    .footer { background: var(--dark); color: rgba(255,255,255,.7); }
+    .footer__grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+      padding-top: 64px;
+      padding-bottom: 56px;
+    }
+    .footer__logo { height: 36px; margin-bottom: 18px; }
+    .footer__tagline { font-size: 14px; line-height: 1.6; max-width: 360px; margin-bottom: 22px; }
+    .footer__social { display: flex; flex-wrap: wrap; gap: 18px; }
+    .footer__social a { color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; transition: color .2s; }
+    .footer__social a:hover { color: var(--primary); }
+    .footer__heading { color: #fff; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 18px; }
+    .footer__links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .footer__links a { color: rgba(255,255,255,.7); font-size: 14px; text-decoration: none; transition: color .2s; }
+    .footer__links a:hover { color: var(--primary); }
+    .footer__bottom { border-top: 1px solid rgba(255,255,255,.1); padding: 24px 0; }
+    .footer__bottom-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .footer__copy, .footer__pay { font-size: 12px; color: rgba(255,255,255,.55); }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 860px) {
       .intro .container,
@@ -324,6 +346,8 @@
       .benefit:nth-last-child(-n+2) { border-bottom: none; }
       .manifesto__inner { grid-template-columns: 1fr; }
       .trustbar .container { grid-template-columns: 1fr 1fr; }
+      .footer__grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .footer__brand { grid-column: 1 / -1; }
       .hero { min-height: 420px; }
     }
     @media (max-width: 560px) {
@@ -332,6 +356,8 @@
       .trustbar .container { grid-template-columns: 1fr; }
       .prof-grid { grid-template-columns: 1fr; }
       .field--half { grid-template-columns: 1fr; }
+      .footer__grid { grid-template-columns: 1fr; gap: 36px; }
+      .footer__bottom-inner { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -510,6 +536,49 @@
       <div class="trust-item"><span class="trust-item__icon">💸</span><div><p class="trust-item__title">Desconto de 5%</p><p class="trust-item__sub">em compras no PIX</p></div></div>
     </div>
   </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div class="footer__brand">
+        <img class="footer__logo" src="https://www.uvits.com.br/cdn/shop/files/logobrancouvits_21c7b47f-256a-451f-93c6-8e9c03d35028.svg?width=300" alt="Uvits Vitaminas" onerror="this.style.display='none'">
+        <p class="footer__tagline">Vitaminas líquidas de alta absorção, desenvolvidas para honrar o cuidado com o corpo.</p>
+        <div class="footer__social">
+          <a href="https://www.instagram.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
+          <a href="https://www.facebook.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a>
+          <a href="https://wa.me/5519981336403" target="_blank" rel="noopener" aria-label="WhatsApp">WhatsApp</a>
+          <a href="https://www.tiktok.com/@uvitsvitaminas" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__heading">Institucional</h3>
+        <ul class="footer__links">
+          <li><a href="https://uvits.com.br/pages/quem-somos" target="_blank" rel="noopener">Quem Somos</a></li>
+          <li><a href="https://uvits.com.br/pages/perguntas-frequentes" target="_blank" rel="noopener">Perguntas Frequentes</a></li>
+          <li><a href="https://uvits.com.br/blogs/blog" target="_blank" rel="noopener">Blog</a></li>
+          <li><a href="https://uvits.com.br/pages/garantia-de-satisfacao" target="_blank" rel="noopener">Garantia de Satisfação</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__heading">Ajuda</h3>
+        <ul class="footer__links">
+          <li><a href="https://uvits.com.br/pages/contato" target="_blank" rel="noopener">Contato</a></li>
+          <li><a href="https://uvits.com.br/policies/privacy-policy" target="_blank" rel="noopener">Política de Privacidade</a></li>
+          <li><a href="https://uvits.com.br/policies/refund-policy" target="_blank" rel="noopener">Política de Trocas e Devoluções</a></li>
+          <li><a href="https://uvits.com.br/policies/refund-policy" target="_blank" rel="noopener">Política de Reembolso</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="container footer__bottom-inner">
+        <p class="footer__copy">© 2026 Uvits Vitaminas · Todos os direitos reservados</p>
+        <p class="footer__pay">American Express · Diners · Discover · Elo · Hypercard · JCB · Mastercard · Visa</p>
+      </div>
+    </div>
+  </footer>
 
   <script>
     // Proteção contra duplo submit
