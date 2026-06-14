@@ -378,13 +378,13 @@
         grid-template-columns: none; display: flex; flex-wrap: nowrap;
         gap: 0; transition: transform .4s ease;
       }
-      .trust-item { flex: 0 0 100%; min-width: 100%; justify-content: center; }
+      .trust-item { flex: 0 0 100%; min-width: 100%; justify-content: center; text-align: left; }
       .trust-dots { display: flex; justify-content: center; gap: 7px; padding-top: 14px; }
       .trust-dots span {
         width: 7px; height: 7px; border-radius: 50%;
-        background: rgba(255,255,255,.45); cursor: pointer; transition: all .2s;
+        background: rgba(28,38,32,.22); cursor: pointer; transition: all .2s;
       }
-      .trust-dots span.active { background: #fff; width: 18px; border-radius: 4px; }
+      .trust-dots span.active { background: var(--primary); width: 18px; border-radius: 4px; }
       .prof-grid { grid-template-columns: 1fr; }
       .field--half { grid-template-columns: 1fr; }
       .footer__grid { grid-template-columns: 1fr; gap: 36px; }
