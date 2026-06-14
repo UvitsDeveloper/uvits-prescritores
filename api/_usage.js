@@ -4,11 +4,10 @@
 // compartilham o dedup `alerted:YYYY-MM:<tag>`. Assim o alerta de 80%/95%
 // reflete o uso COMBINADO de comandos do Upstash entre os projetos.
 //
-// NOTA: hoje o contador guarda REQUISIÇÕES e estima comandos = req × CMDS_PER_REQ
-// (idêntico à Frete). A troca para CONTAGEM REAL de comandos fica para quando
-// mexermos no repo da Frete (migrar a chave para "unidade de comandos").
+// O contador `cmdusage:YYYY-MM` guarda COMANDOS reais: cada chamador informa
+// quantos comandos Redis a requisição emitiu, e fazemos incrby por esse número.
 //
-// DROP-IN: autossuficiente. Copie em cada projeto e chame `registrarUso(req)`.
+// DROP-IN: autossuficiente. Copie em cada projeto e chame registrarUso(req, comandos).
 const { Redis } = require('@upstash/redis');
 
 const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL   || process.env.KV_REST_API_URL;
@@ -18,7 +17,8 @@ const redis = (REDIS_URL && REDIS_TOKEN)
   : null;
 
 const LIMIT        = parseInt(process.env.REDIS_COMMAND_LIMIT || '500000', 10);
-const CMDS_PER_REQ = parseFloat(process.env.REDIS_CMDS_PER_REQUEST || '3');
+// comandos por requisição assumidos quando registrarUso é chamado sem o nº exato
+const CMDS_PER_REQ = parseInt(process.env.REDIS_CMDS_PER_REQUEST || '2', 10);
 const PROJETO      = process.env.USAGE_PROJECT || 'uvits-prescritores';
 
 // Limiares de alerta (fração do limite mensal) — iguais aos da Frete
@@ -82,9 +82,10 @@ async function enviarEmail({ usados, limite, pct, mes }) {
   }
 }
 
-// Registra 1 requisição no contador compartilhado e alerta ao cruzar limiar.
+// Soma os comandos REAIS desta requisição ao contador compartilhado e alerta
+// ao cruzar limiar. `comandos` = nº de comandos Redis que a requisição emitiu.
 // Ignora preflight OPTIONS. Nunca lança — falha silenciosa.
-async function registrarUso(req) {
+async function registrarUso(req, comandos = CMDS_PER_REQ) {
   if (!redis) return;
   if (req && req.method === 'OPTIONS') return;
 
@@ -92,25 +93,24 @@ async function registrarUso(req) {
   const chaveContador = `cmdusage:${mes}`;
 
   try {
-    const requisicoes = await redis.incr(chaveContador);
+    // Soma o nº REAL de comandos desta requisição (contador em comandos)
+    const total = await redis.incrby(chaveContador, comandos);
 
-    // Na primeira requisição do mês, define a expiração
-    if (requisicoes === 1) {
+    // Primeira escrita do mês (total == incremento) → define a expiração
+    if (total === comandos) {
       await redis.expire(chaveContador, TTL);
     }
 
-    const comandosEstimados = Math.round(requisicoes * CMDS_PER_REQ);
-
-    // Verifica do limiar mais alto para o mais baixo
+    // `total` já está em COMANDOS reais — compara direto com o limite
     for (let i = THRESHOLDS.length - 1; i >= 0; i--) {
       const t = THRESHOLDS[i];
-      if (comandosEstimados >= LIMIT * t.frac) {
+      if (total >= LIMIT * t.frac) {
         const chaveFlag = `alerted:${mes}:${t.tag}`;
         // SET NX (atômico): só o primeiro a cruzar — em QUALQUER projeto — envia
         const trava = await redis.set(chaveFlag, '1', { nx: true, ex: TTL });
         if (trava) {
           await enviarEmail({
-            usados: comandosEstimados,
+            usados: total,
             limite: LIMIT,
             pct: Math.round(t.frac * 100),
             mes,

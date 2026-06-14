@@ -13,7 +13,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  await registrarUso(req); // medidor de uso cross-projeto (não bloqueia)
+  await registrarUso(req, 1); // sem rate limit nesta rota → só 1 comando (incrby)
 
   // Todas as rotas exigem autenticação
   const usuario = autenticar(req, res);
