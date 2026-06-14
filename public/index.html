@@ -326,16 +326,19 @@
     }
     .footer__logo { height: 36px; margin-bottom: 18px; }
     .footer__tagline { font-size: 14px; line-height: 1.6; max-width: 360px; margin-bottom: 22px; }
-    .footer__social { display: flex; flex-wrap: wrap; gap: 18px; }
-    .footer__social a { color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; transition: color .2s; }
-    .footer__social a:hover { color: var(--primary); }
+    .footer__social { display: flex; flex-wrap: wrap; gap: 14px; }
+    .footer__social a { display: inline-flex; color: rgba(255,255,255,.7); text-decoration: none; transition: color .2s, transform .2s; }
+    .footer__social a:hover { color: var(--primary); transform: translateY(-2px); }
+    .footer__social svg { width: 22px; height: 22px; }
     .footer__heading { color: #fff; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 18px; }
     .footer__links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
     .footer__links a { color: rgba(255,255,255,.7); font-size: 14px; text-decoration: none; transition: color .2s; }
     .footer__links a:hover { color: var(--primary); }
     .footer__bottom { border-top: 1px solid rgba(255,255,255,.1); padding: 24px 0; }
     .footer__bottom-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .footer__copy, .footer__pay { font-size: 12px; color: rgba(255,255,255,.55); }
+    .footer__copy { font-size: 12px; color: rgba(255,255,255,.55); }
+    .footer__pay { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .footer__pay svg { width: 38px; height: 24px; display: block; border-radius: 4px; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 860px) {
@@ -551,10 +554,10 @@
         <img class="footer__logo" src="https://www.uvits.com.br/cdn/shop/files/logobrancouvits_21c7b47f-256a-451f-93c6-8e9c03d35028.svg?width=300" alt="Uvits Vitaminas" onerror="this.style.display='none'">
         <p class="footer__tagline">Vitaminas líquidas de alta absorção, desenvolvidas para honrar o cuidado com o corpo.</p>
         <div class="footer__social">
-          <a href="https://www.instagram.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a>
-          <a href="https://www.facebook.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a>
-          <a href="https://wa.me/5519981336403" target="_blank" rel="noopener" aria-label="WhatsApp">WhatsApp</a>
-          <a href="https://www.tiktok.com/@uvitsvitaminas" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+          <a href="https://www.instagram.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="https://www.facebook.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z"/></svg></a>
+          <a href="https://wa.me/5519981336403" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2a9.9 9.9 0 0 0-8.42 15.13L2 22l4.97-1.3A9.9 9.9 0 1 0 12.04 2Zm0 1.8a8.1 8.1 0 0 1 5.74 13.83 8.1 8.1 0 0 1-9.6 1.38l-.35-.2-2.95.77.79-2.87-.23-.37A8.1 8.1 0 0 1 12.04 3.8Zm-3.1 4.3c-.15 0-.4.06-.6.3-.21.23-.8.78-.8 1.9 0 1.12.82 2.2.93 2.36.12.15 1.6 2.55 3.95 3.47 1.96.77 2.36.62 2.78.58.43-.04 1.38-.56 1.58-1.11.2-.55.2-1.02.14-1.12-.06-.1-.21-.15-.45-.27-.23-.12-1.38-.68-1.6-.76-.21-.08-.37-.12-.52.12-.15.23-.59.75-.72.9-.13.16-.27.18-.5.06-.24-.12-1-.37-1.9-1.18-.7-.62-1.18-1.4-1.31-1.63-.14-.23-.01-.36.1-.48.11-.1.24-.27.36-.4.12-.14.16-.24.24-.4.08-.15.04-.29-.02-.4-.06-.12-.52-1.28-.72-1.74-.18-.43-.37-.37-.51-.38h-.45Z"/></svg></a>
+          <a href="https://www.tiktok.com/@uvitsvitaminas" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.1-2.82h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.27 0 .53.04.78.12V9.74a5.7 5.7 0 0 0-.78-.05 5.7 5.7 0 1 0 5.7 5.7V9.01a7.34 7.34 0 0 0 4.3 1.38V7.3a4.28 4.28 0 0 1-3.2-1.48Z"/></svg></a>
         </div>
       </div>
 
@@ -582,7 +585,16 @@
     <div class="footer__bottom">
       <div class="container footer__bottom-inner">
         <p class="footer__copy">© 2026 Uvits Vitaminas · Todos os direitos reservados</p>
-        <p class="footer__pay">American Express · Diners · Discover · Elo · Hypercard · JCB · Mastercard · Visa</p>
+        <div class="footer__pay" aria-label="Formas de pagamento">
+          <svg viewBox="0 0 38 24" role="img" aria-label="Visa"><rect width="38" height="24" rx="3" fill="#fff"/><text x="19" y="16.5" font-family="Arial,Helvetica,sans-serif" font-size="9.5" font-weight="700" font-style="italic" fill="#1A1F71" text-anchor="middle" letter-spacing=".3">VISA</text></svg>
+          <svg viewBox="0 0 38 24" role="img" aria-label="Mastercard"><rect width="38" height="24" rx="3" fill="#16213a"/><circle cx="15.5" cy="12" r="6" fill="#EB001B"/><circle cx="22.5" cy="12" r="6" fill="#F79E1B"/><path d="M19 7.4a6 6 0 0 0 0 9.2 6 6 0 0 0 0-9.2Z" fill="#FF5F00"/></svg>
+          <svg viewBox="0 0 38 24" role="img" aria-label="American Express"><rect width="38" height="24" rx="3" fill="#1F72CF"/><text x="19" y="15.5" font-family="Arial,Helvetica,sans-serif" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing=".2">AMEX</text></svg>
+          <svg viewBox="0 0 38 24" role="img" aria-label="Elo"><rect width="38" height="24" rx="3" fill="#000"/><text x="19" y="16" font-family="Arial,Helvetica,sans-serif" font-size="9" font-weight="700" font-style="italic" fill="#fff" text-anchor="middle">elo</text></svg>
+          <svg viewBox="0 0 38 24" role="img" aria-label="Hipercard"><rect width="38" height="24" rx="3" fill="#C4161C"/><text x="19" y="15.5" font-family="Arial,Helvetica,sans-serif" font-size="6.5" font-weight="700" font-style="italic" fill="#fff" text-anchor="middle">Hiper</text></svg>
+          <svg viewBox="0 0 38 24" role="img" aria-label="Diners Club"><rect width="38" height="24" rx="3" fill="#fff"/><circle cx="19" cy="12" r="7" fill="none" stroke="#0079BE" stroke-width="1.6"/><path d="M19 6.5v11" stroke="#0079BE" stroke-width="1.6"/></svg>
+          <svg viewBox="0 0 38 24" role="img" aria-label="Discover"><rect width="38" height="24" rx="3" fill="#fff"/><text x="16.5" y="15" font-family="Arial,Helvetica,sans-serif" font-size="5.2" font-weight="700" fill="#4D4D4D" text-anchor="middle" letter-spacing=".1">DISCOVER</text><circle cx="31" cy="13" r="3.4" fill="#F58220"/></svg>
+          <svg viewBox="0 0 38 24" role="img" aria-label="JCB"><rect width="38" height="24" rx="3" fill="#fff"/><rect x="9" y="6" width="6" height="12" rx="1.5" fill="#0F4C9B"/><rect x="16" y="6" width="6" height="12" rx="1.5" fill="#BE0028"/><rect x="23" y="6" width="6" height="12" rx="1.5" fill="#00833E"/></svg>
+        </div>
       </div>
     </div>
   </footer>
