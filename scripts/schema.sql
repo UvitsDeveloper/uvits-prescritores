@@ -32,7 +32,11 @@ CREATE TABLE IF NOT EXISTS prescritores (
 -- Índices
 CREATE INDEX IF NOT EXISTS idx_prescritores_status    ON prescritores (status);
 CREATE INDEX IF NOT EXISTS idx_prescritores_criado_em ON prescritores (criado_em DESC);
-CREATE INDEX IF NOT EXISTS idx_prescritores_email     ON prescritores (email);
+
+-- Unicidade: um e-mail e um registro de conselho (CRM/CRN) por prescritor
+-- (também serve de índice para busca por e-mail). Conselho é gravado em MAIÚSCULAS.
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_prescritores_email    ON prescritores (email);
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_prescritores_conselho ON prescritores (conselho);
 
 -- Trigger para atualizar automaticamente atualizado_em
 CREATE OR REPLACE FUNCTION atualizar_timestamp()

@@ -85,12 +85,29 @@ module.exports = async function handler(req, res) {
   const email     = sanitize(req.body?.email,      254).toLowerCase();
   const whatsapp  = sanitize(req.body?.whatsapp,    30);
   const profissao = sanitize(req.body?.profissao,   60);
-  const conselho  = sanitize(req.body?.conselho,    60);
+  // conselho normalizado em MAIÚSCULAS para uma comparação de unicidade consistente
+  const conselho  = sanitize(req.body?.conselho,    60).toUpperCase();
 
   // Validação
   const erros = validar({ nome, email, whatsapp, profissao, conselho });
   if (erros.length > 0)
     return res.status(400).json({ error: erros.join(' ') });
+
+  // ── Unicidade: e-mail e conselho não podem repetir ─────────────────────────
+  try {
+    const { rows: dup } = await sql`
+      SELECT email, conselho FROM prescritores
+      WHERE email = ${email} OR conselho = ${conselho}
+      LIMIT 1
+    `;
+    if (dup.length > 0) {
+      const campo = dup[0].email === email ? 'e-mail' : 'registro do conselho (CRM/CRN)';
+      return res.status(409).json({ error: `Este ${campo} já está cadastrado.` });
+    }
+  } catch (err) {
+    console.error('[cadastro] erro ao verificar duplicidade:', err);
+    return res.status(500).json({ error: 'Erro ao processar cadastro. Tente novamente.' });
+  }
 
   // ── 1. Salvar no banco ANTES de enviar e-mails (Atomicidade) ───────────────
   let prescritorId = null;
@@ -104,6 +121,11 @@ module.exports = async function handler(req, res) {
     `;
     prescritorId = rows[0].id;
   } catch (err) {
+    // 23505 = unique_violation — corrida entre a checagem acima e o INSERT
+    if (err && err.code === '23505') {
+      const campo = String(err.detail || '').includes('email') ? 'e-mail' : 'registro do conselho (CRM/CRN)';
+      return res.status(409).json({ error: `Este ${campo} já está cadastrado.` });
+    }
     console.error('[cadastro] erro ao salvar no banco:', err);
     return res.status(500).json({ error: 'Erro ao processar cadastro. Tente novamente.' });
   }

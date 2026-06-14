@@ -348,9 +348,15 @@
       .who .container,
       .form-section .container { grid-template-columns: 1fr; }
       .intro__left, .who__left, .form-section__left { border-right: none; border-bottom: 1px solid var(--border); padding: 48px 0; }
-      .intro__right, .form-section__right { padding: 48px 0; }
-      .who__right { padding: 40px 0; justify-content: flex-start; }
-      .who__visual { max-width: 100%; }
+      .intro__right { padding: 48px 0; }
+      /* Áreas bege ocupam a largura total da tela (full-bleed) com o conteúdo centralizado */
+      .who__right, .form-section__right {
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding: 48px 5%;
+        justify-content: center;
+      }
+      .who__visual { max-width: 360px; }
       .benefits-grid { grid-template-columns: 1fr 1fr; }
       .benefit:nth-child(2n)        { border-right: none; }
       .benefit:nth-child(4n)        { border-right: 1px solid var(--border); }
@@ -483,6 +489,10 @@
             <div class="field">
               <label for="email">E-mail profissional *</label>
               <input type="email" id="email" placeholder="seu@email.com.br" required>
+            </div>
+            <div class="field">
+              <label for="email-confirma">Confirme o e-mail *</label>
+              <input type="email" id="email-confirma" placeholder="repita seu e-mail" required onpaste="return false;">
             </div>
             <div class="field--half">
               <div class="field">
@@ -622,7 +632,7 @@
 
       if (prof === 'Médico(a)') {
         label.textContent  = 'Número do CRM *';
-        input.placeholder  = 'CRM 123456/SP';
+        input.placeholder  = '123456/SP';
         input.disabled     = false;
       } else if (prof === 'Nutricionista') {
         label.textContent  = 'Número do CRN *';
@@ -642,16 +652,17 @@
       const btn    = document.getElementById('btn-submit');
       const erro   = document.getElementById('form-error');
 
-      const nome      = sanitizarInput(document.getElementById('nome').value, 120);
-      const email     = sanitizarInput(document.getElementById('email').value, 254).toLowerCase();
-      const whatsapp  = sanitizarInput(document.getElementById('whatsapp').value, 30);
+      const nome          = sanitizarInput(document.getElementById('nome').value, 120);
+      const email         = sanitizarInput(document.getElementById('email').value, 254).toLowerCase();
+      const emailConfirma = sanitizarInput(document.getElementById('email-confirma').value, 254).toLowerCase();
+      const whatsapp      = sanitizarInput(document.getElementById('whatsapp').value, 30);
       const profissao = sanitizarInput(document.getElementById('profissao').value, 60);
       const conselho  = sanitizarInput(document.getElementById('conselho').value, 60);
 
       erro.style.display = 'none';
 
       // Validação local com destaque no campo específico
-      ['nome','email','whatsapp','profissao','conselho'].forEach(id =>
+      ['nome','email','email-confirma','whatsapp','profissao','conselho'].forEach(id =>
         document.getElementById(id).classList.remove('input-error'));
 
       const erros = [];
@@ -662,6 +673,7 @@
 
       if (nome.length < 3) marcar('nome', 'Por favor, informe seu nome completo.');
       if (!EMAIL_REGEX.test(email)) marcar('email', 'Por favor, informe um e-mail válido.');
+      else if (email !== emailConfirma) marcar('email-confirma', 'Os e-mails não coincidem.');
       if (!whatsapp || !WHATSAPP_REGEX.test(whatsapp)) marcar('whatsapp', 'Por favor, informe um WhatsApp válido.');
       if (!profissao) marcar('profissao', 'Por favor, selecione sua profissão.');
       if (!conselho || conselho.length < 4) marcar('conselho', 'Por favor, informe o número do seu conselho (CRM ou CRN).');
@@ -717,10 +729,35 @@
       return '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
     }
 
+    // Máscara do conselho conforme a profissão.
+    // CRM: NNNNNN/UF (até 6 dígitos + sigla do estado).
+    // CRN: leniente (mantém CRN-3 12345), só normaliza caracteres e maiúsculas.
+    function mascaraConselho(v, tipo) {
+      v = String(v).toUpperCase();
+      if (tipo === 'CRM') {
+        let nums = '', uf = '';
+        for (const ch of v) {
+          if (ch >= '0' && ch <= '9') { if (uf.length === 0 && nums.length < 6) nums += ch; }
+          else if (ch >= 'A' && ch <= 'Z') { if (nums.length > 0 && uf.length < 2) uf += ch; }
+        }
+        return uf ? nums + '/' + uf : nums;
+      }
+      // CRN: mantém dígitos, letras, '-', '/' e espaço; limita o tamanho
+      return v.replace(/[^0-9A-Z/\- ]/g, '').replace(/\s+/g, ' ').slice(0, 15);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       // Formata o WhatsApp enquanto digita
       const wpp = document.getElementById('whatsapp');
       if (wpp) wpp.addEventListener('input', e => { e.target.value = mascaraWhatsapp(e.target.value); });
+
+      // Formata o conselho (CRM/CRN) conforme a profissão selecionada
+      const cons = document.getElementById('conselho');
+      if (cons) cons.addEventListener('input', e => {
+        const prof = document.getElementById('profissao').value;
+        const tipo = prof === 'Médico(a)' ? 'CRM' : (prof === 'Nutricionista' ? 'CRN' : null);
+        if (tipo) e.target.value = mascaraConselho(e.target.value, tipo);
+      });
 
       // Se já há cadastro neste navegador, esconde o formulário e mostra o aviso
       let jaCadastrado = false;
