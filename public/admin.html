@@ -319,7 +319,17 @@
       width: 100%; max-width: 520px;
       max-height: 90vh; overflow-y: auto;
       padding: 32px;
+      scrollbar-width: thin;                 /* Firefox */
+      scrollbar-color: var(--primary) var(--cream);
     }
+    /* Scrollbar com a identidade do site (Chrome/Edge/Safari) */
+    .modal::-webkit-scrollbar { width: 10px; }
+    .modal::-webkit-scrollbar-track { background: var(--cream); border-radius: 0 16px 16px 0; }
+    .modal::-webkit-scrollbar-thumb {
+      background: var(--primary); border-radius: 8px;
+      border: 2px solid var(--cream);
+    }
+    .modal::-webkit-scrollbar-thumb:hover { background: #25a98e; }
     .modal__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
     .modal__title  { font-size: 18px; font-weight: 900; letter-spacing: -0.4px; }
     .modal__close  {
