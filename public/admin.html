@@ -231,6 +231,65 @@
     /* Data-label para o modo card no mobile (oculto no desktop) */
     td[data-label]::before { content: none; }
 
+    /* ── LOGO / AVATAR / CONTA ── */
+    .login-brand {
+      background: var(--dark); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; margin-bottom: 22px;
+    }
+    .login-brand img { height: 30px; width: auto; }
+    .navbar__left { display: flex; align-items: center; gap: 12px; }
+    .navbar__logo { height: 26px; width: auto; display: block; }
+    .navbar__account {
+      display: flex; align-items: center; gap: 9px;
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.7); font-size: 12px; font-family: inherit;
+      padding: 4px 8px; border-radius: 8px; transition: background .15s;
+    }
+    .navbar__account:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .navbar__account strong { color: #fff; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; overflow: hidden; flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* View de configuração da conta */
+    #config-view { display: none; }
+    .main.showing-config > :not(#config-view) { display: none; }
+    .main.showing-config #config-view { display: block; }
+    .config-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .config-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+    .btn-back {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 14px; cursor: pointer; transition: all .15s;
+    }
+    .btn-back:hover { border-color: var(--primary); color: var(--primary); }
+    .settings-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px;
+      padding: 24px; margin-bottom: 18px; max-width: 640px;
+      box-shadow: 0 1px 2px rgba(28,38,32,.04);
+    }
+    .settings-card h3 { font-size: 14px; font-weight: 800; display: flex; align-items: center; }
+    .settings-card .sub { font-size: 12px; color: var(--text); margin: 4px 0 18px; line-height: 1.6; }
+    .avatar-edit { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+    .avatar-lg { width: 76px; height: 76px; border-radius: 50%; font-size: 26px; }
+    .field-ro { font-size: 13px; color: var(--dark); padding: 10px 13px; background: var(--cream); border-radius: 8px; }
+    .soon {
+      font-size: 9.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+      color: #92400e; background: #fef3c7; padding: 3px 8px; border-radius: 20px; margin-left: 8px;
+    }
+    .btn-outline {
+      font-size: 13px; font-weight: 700; color: var(--dark);
+      background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 16px; cursor: pointer; transition: all .15s;
+    }
+    .btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .btn-outline:disabled { opacity: .5; cursor: not-allowed; }
+
     /* ── MODAL DETALHES ── */
     .overlay {
       position: fixed; inset: 0;
@@ -336,7 +395,9 @@
 <!-- ── TELA DE LOGIN ── -->
 <div class="login-wrap" id="tela-login">
   <div class="login-card">
-    <p class="login-logo">Uvits Pro Prescritor</p>
+    <div class="login-brand">
+      <img src="https://www.uvits.com.br/cdn/shop/files/logobrancouvits_21c7b47f-256a-451f-93c6-8e9c03d35028.svg?width=300" alt="Uvits Pro Prescritor" onerror="this.parentElement.outerHTML='&lt;p class=&quot;login-logo&quot;&gt;Uvits Pro Prescritor&lt;/p&gt;'">
+    </div>
     <h1 class="login-title">Acesso ao painel</h1>
     <div class="field">
       <label for="l-email">E-mail</label>
@@ -355,9 +416,14 @@
 <!-- ── PAINEL ── -->
 <div class="painel" id="painel">
   <nav class="navbar">
-    <span class="navbar__brand">Uvits Pro Prescritor</span>
+    <div class="navbar__left">
+      <img class="navbar__logo" src="https://www.uvits.com.br/cdn/shop/files/logobrancouvits_21c7b47f-256a-451f-93c6-8e9c03d35028.svg?width=300" alt="Uvits Pro Prescritor" onerror="this.outerHTML='&lt;span class=&quot;navbar__brand&quot;&gt;Uvits Pro Prescritor&lt;/span&gt;'">
+    </div>
     <div class="navbar__user">
-      Olá, <strong id="nav-nome">—</strong>
+      <button class="navbar__account" onclick="abrirConfig()" title="Configurar conta">
+        <span class="avatar" id="nav-avatar">—</span>
+        <span>Olá, <strong id="nav-nome">—</strong></span>
+      </button>
       <button class="btn-logout" onclick="sair()">Sair</button>
     </div>
   </nav>
@@ -421,6 +487,39 @@
 
     <!-- Paginação -->
     <div class="pagination" id="paginacao"></div>
+
+    <!-- ── CONFIGURAR CONTA ── -->
+    <div id="config-view">
+      <div class="config-header">
+        <button class="btn-back" onclick="fecharConfig()">← Voltar</button>
+        <span class="config-title">Configurar conta</span>
+      </div>
+
+      <div class="settings-card">
+        <h3>Perfil</h3>
+        <p class="sub">Sua foto e dados de acesso ao painel.</p>
+        <div class="avatar-edit">
+          <span class="avatar avatar-lg" id="cfg-avatar">—</span>
+          <div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="selecionarAvatar(event)">
+            <button class="btn-outline" onclick="document.getElementById('avatar-input').click()">Trocar foto</button>
+            <button class="btn-outline" onclick="removerAvatar()" style="margin-left:8px;">Remover</button>
+            <p class="sub" style="margin:10px 0 0;">PNG ou JPG. A imagem é redimensionada e salva neste navegador.</p>
+          </div>
+        </div>
+        <div style="margin-top:20px;display:grid;gap:12px;max-width:420px;">
+          <div><p class="modal-field__label">Nome</p><p class="field-ro" id="cfg-nome">—</p></div>
+          <div><p class="modal-field__label">E-mail</p><p class="field-ro" id="cfg-email">—</p></div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>Segurança <span class="soon">em breve</span></h3>
+        <p class="sub">Alteração de senha e autenticação em duas etapas (2FA), com códigos de backup e recuperação por e-mail, chegam na próxima atualização.</p>
+        <button class="btn-outline" disabled>Alterar senha</button>
+        <button class="btn-outline" disabled style="margin-left:8px;">Ativar 2FA</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -484,6 +583,7 @@
   // ── Estado global ──────────────────────────────────────────────────────────
   let token        = localStorage.getItem('uvits_token') || '';
   let usuarioNome  = localStorage.getItem('uvits_nome')  || '';
+  let usuarioEmail = localStorage.getItem('uvits_email') || '';
   let statusFiltro = 'todos';
   let paginaAtual  = 1;
   let buscaAtual   = '';
@@ -524,8 +624,10 @@
 
       token       = data.token;
       usuarioNome = data.usuario.nome;
+      usuarioEmail = data.usuario.email || '';
       localStorage.setItem('uvits_token', token);
       localStorage.setItem('uvits_nome',  usuarioNome);
+      localStorage.setItem('uvits_email', usuarioEmail);
 
       mostrarPainel();
       carregarDados();
@@ -541,8 +643,10 @@
   function sair() {
     token = '';
     usuarioNome = '';
+    usuarioEmail = '';
     localStorage.removeItem('uvits_token');
     localStorage.removeItem('uvits_nome');
+    localStorage.removeItem('uvits_email');
     document.getElementById('painel').style.display = 'none';
     document.getElementById('tela-login').style.display = 'flex';
     document.getElementById('l-senha').value = '';
@@ -554,6 +658,65 @@
     document.getElementById('tela-login').style.display = 'none';
     document.getElementById('painel').style.display     = 'flex';
     document.getElementById('nav-nome').textContent     = usuarioNome;
+    document.querySelector('.main').classList.remove('showing-config');
+    renderAvatar();
+  }
+
+  // ── CONTA / AVATAR ──────────────────────────────────────────────────────────
+  function iniciais(nome) {
+    return (nome || '').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
+  }
+
+  function renderAvatar() {
+    const data = localStorage.getItem('uvits_admin_avatar');
+    const html = data ? `<img src="${data}" alt="">` : esc(iniciais(usuarioNome));
+    const nav = document.getElementById('nav-avatar'); if (nav) nav.innerHTML = html;
+    const cfg = document.getElementById('cfg-avatar'); if (cfg) cfg.innerHTML = html;
+  }
+
+  function abrirConfig() {
+    document.getElementById('cfg-nome').textContent  = usuarioNome  || '—';
+    document.getElementById('cfg-email').textContent = usuarioEmail || '—';
+    renderAvatar();
+    document.querySelector('.main').classList.add('showing-config');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function fecharConfig() {
+    document.querySelector('.main').classList.remove('showing-config');
+  }
+
+  // Redimensiona a imagem para 256×256 (cover) e salva como dataURL — evita
+  // estourar a cota do localStorage e padroniza o avatar.
+  function selecionarAvatar(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(size / img.width, size / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+      try {
+        localStorage.setItem('uvits_admin_avatar', canvas.toDataURL('image/jpeg', 0.85));
+        renderAvatar();
+      } catch (_) {
+        alert('Não foi possível salvar a imagem.');
+      }
+      e.target.value = '';
+    };
+    img.onerror = () => alert('Arquivo de imagem inválido.');
+    const reader = new FileReader();
+    reader.onload = () => { img.src = reader.result; };
+    reader.readAsDataURL(file);
+  }
+
+  function removerAvatar() {
+    localStorage.removeItem('uvits_admin_avatar');
+    renderAvatar();
   }
 
   // ── DADOS ──────────────────────────────────────────────────────────────────
