@@ -221,6 +221,8 @@
     }
     .field input:focus,
     .field select:focus { border-color: var(--primary); }
+    .field input.input-error,
+    .field select.input-error { border-color: #c0392b; background: #fff7f7; }
     .field--half { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
     .btn-submit {
@@ -506,10 +508,11 @@
             <div class="form-error" id="form-error"></div>
           </div>
 
-          <div class="form-success" id="form-success">
+          <div class="form-success" id="form-already" style="display:none;">
             <div class="form-success__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg></div>
-            <p class="form-success__title">Cadastro enviado!</p>
-            <p class="form-success__text">Obrigado! Você receberá um e-mail de confirmação em breve.<br>Nossa equipe validará seu cadastro em até 24 horas úteis.</p>
+            <p class="form-success__title">Você já está cadastrado!</p>
+            <p class="form-success__text">Recebemos seu cadastro neste navegador. Nossa equipe valida as informações e entra em contato pelo WhatsApp em até 24 horas úteis.</p>
+            <a class="btn-submit" href="obrigado.html" style="display:inline-block;width:auto;padding:14px 28px;margin-top:18px;text-decoration:none;">Ver confirmação →</a>
           </div>
 
           <p class="form-privacy"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Dados protegidos pela LGPD · Nenhuma informação compartilhada com terceiros</p>
@@ -647,30 +650,27 @@
 
       erro.style.display = 'none';
 
-      // Validação local
-      if (nome.length < 3) {
-        erro.textContent = 'Por favor, informe seu nome completo.';
+      // Validação local com destaque no campo específico
+      ['nome','email','whatsapp','profissao','conselho'].forEach(id =>
+        document.getElementById(id).classList.remove('input-error'));
+
+      const erros = [];
+      const marcar = (id, msg) => {
+        document.getElementById(id).classList.add('input-error');
+        erros.push({ id, msg });
+      };
+
+      if (nome.length < 3) marcar('nome', 'Por favor, informe seu nome completo.');
+      if (!EMAIL_REGEX.test(email)) marcar('email', 'Por favor, informe um e-mail válido.');
+      if (!whatsapp || !WHATSAPP_REGEX.test(whatsapp)) marcar('whatsapp', 'Por favor, informe um WhatsApp válido.');
+      if (!profissao) marcar('profissao', 'Por favor, selecione sua profissão.');
+      if (!conselho || conselho.length < 4) marcar('conselho', 'Por favor, informe o número do seu conselho (CRM ou CRN).');
+
+      if (erros.length) {
+        erro.textContent = erros[0].msg;
         erro.style.display = 'block';
-        return;
-      }
-      if (!EMAIL_REGEX.test(email)) {
-        erro.textContent = 'Por favor, informe um e-mail válido.';
-        erro.style.display = 'block';
-        return;
-      }
-      if (!whatsapp || !WHATSAPP_REGEX.test(whatsapp)) {
-        erro.textContent = 'Por favor, informe um WhatsApp válido.';
-        erro.style.display = 'block';
-        return;
-      }
-      if (!conselho || conselho.length < 4) {
-        erro.textContent = 'Por favor, informe o número do seu conselho (CRM ou CRN).';
-        erro.style.display = 'block';
-        return;
-      }
-      if (!profissao) {
-        erro.textContent = 'Por favor, selecione sua profissão.';
-        erro.style.display = 'block';
+        const primeiro = document.getElementById(erros[0].id);
+        if (!primeiro.disabled) primeiro.focus();
         return;
       }
 
@@ -691,8 +691,13 @@
           throw new Error(data.error || 'Erro no servidor');
         }
 
-        document.getElementById('form-fields').style.display = 'none';
-        document.getElementById('form-success').style.display = 'block';
+        // Marca como cadastrado neste navegador e leva à página de confirmação
+        try {
+          localStorage.setItem('uvits_prescritor_cadastrado',
+            JSON.stringify({ nome, email, data: new Date().toISOString() }));
+        } catch (_) {}
+        window.location.href = 'obrigado.html';
+        return;
 
       } catch (e) {
         erro.textContent = e.message || 'Ocorreu um erro. Por favor, tente novamente.';
@@ -702,6 +707,31 @@
         enviando = false;
       }
     }
+
+    // Máscara de WhatsApp: (11) 99999-9999
+    function mascaraWhatsapp(v) {
+      v = String(v).replace(/\D/g, '').slice(0, 11);
+      if (v.length <= 2)  return v ? '(' + v : v;
+      if (v.length <= 6)  return '(' + v.slice(0, 2) + ') ' + v.slice(2);
+      if (v.length <= 10) return '(' + v.slice(0, 2) + ') ' + v.slice(2, 6) + '-' + v.slice(6);
+      return '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Formata o WhatsApp enquanto digita
+      const wpp = document.getElementById('whatsapp');
+      if (wpp) wpp.addEventListener('input', e => { e.target.value = mascaraWhatsapp(e.target.value); });
+
+      // Se já há cadastro neste navegador, esconde o formulário e mostra o aviso
+      let jaCadastrado = false;
+      try { jaCadastrado = !!localStorage.getItem('uvits_prescritor_cadastrado'); } catch (_) {}
+      if (jaCadastrado) {
+        const campos = document.getElementById('form-fields');
+        const aviso  = document.getElementById('form-already');
+        if (campos) campos.style.display = 'none';
+        if (aviso)  aviso.style.display = 'block';
+      }
+    });
   </script>
 
 </body>

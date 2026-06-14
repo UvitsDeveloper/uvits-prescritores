@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro recebido — Uvits Pro Prescritor</title>
+  <meta name="robots" content="noindex">
+  <meta name="description" content="Recebemos seu cadastro no programa Uvits Pro Prescritor. Nossa equipe entra em contato em até 24 horas úteis.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #2EC4A5;
+      --dark:    #1C2620;
+      --cream:   #F5F1EC;
+      --border:  #E8E3DD;
+      --text:    #5a6b5e;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      max-width: 520px; width: 100%;
+      overflow: hidden;
+    }
+    .card__top {
+      background: var(--dark);
+      padding: 36px 40px 32px;
+      text-align: center;
+    }
+    .card__eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--primary); margin-bottom: 16px;
+    }
+    .check {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(46,196,165,.15);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px;
+    }
+    .check svg { width: 32px; height: 32px; color: var(--primary); }
+    .card__title { font-size: 24px; font-weight: 900; letter-spacing: -0.6px; color: #fff; }
+    .card__body { padding: 32px 40px 36px; }
+    .card__lead { font-size: 14px; color: var(--text); line-height: 1.7; text-align: center; margin-bottom: 28px; }
+    .steps { display: flex; flex-direction: column; gap: 16px; margin-bottom: 30px; }
+    .step { display: flex; align-items: flex-start; gap: 12px; }
+    .step__num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step__title { font-size: 13px; font-weight: 700; }
+    .step__sub { font-size: 12px; color: var(--text); margin-top: 2px; }
+    .btn {
+      display: block; text-align: center;
+      background: var(--primary); color: #fff;
+      font-size: 15px; font-weight: 700;
+      padding: 16px; border-radius: 10px;
+      text-decoration: none; transition: opacity .2s;
+    }
+    .btn:hover { opacity: .88; }
+    .note { font-size: 11px; color: #aab8b2; text-align: center; margin-top: 16px; line-height: 1.6; }
+    .home { display: inline-block; margin-top: 14px; font-size: 12px; color: var(--text); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="card__top">
+      <p class="card__eyebrow">Uvits Pro Prescritor</p>
+      <div class="check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h1 class="card__title">Cadastro recebido!</h1>
+    </div>
+
+    <div class="card__body">
+      <p class="card__lead">Obrigado por se cadastrar no programa. Você receberá um e-mail de confirmação em breve — e nossa equipe dá sequência aos próximos passos.</p>
+
+      <div class="steps">
+        <div class="step"><div class="step__num">1</div><div><p class="step__title">Validação em até 24h úteis</p><p class="step__sub">Conferimos seu registro no CRM ou CRN.</p></div></div>
+        <div class="step"><div class="step__num">2</div><div><p class="step__title">Contato pelo WhatsApp</p><p class="step__sub">Enviamos as condições exclusivas do programa.</p></div></div>
+        <div class="step"><div class="step__num">3</div><div><p class="step__title">Comece a indicar</p><p class="step__sub">Benefícios para você e para os seus pacientes.</p></div></div>
+      </div>
+
+      <a class="btn" href="https://uvits.com.br" target="_blank" rel="noopener">Conhecer a Uvits →</a>
+      <div style="text-align:center;">
+        <a class="home" href="index.html">Voltar ao início</a>
+      </div>
+      <p class="note">🔒 Dados protegidos pela LGPD · Nenhuma informação compartilhada com terceiros</p>
+    </div>
+  </main>
+</body>
+</html>
