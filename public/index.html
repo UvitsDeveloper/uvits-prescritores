@@ -126,7 +126,8 @@
       transition: opacity .2s;
     }
     .btn-primary:hover { opacity: .85; }
-    .btn-note { font-size: 11px; color: #aab8b2; }
+    .btn-note { font-size: 11px; color: #aab8b2; display: inline-flex; align-items: center; gap: 6px; }
+    .icon-inline { width: 1em; height: 1em; flex-shrink: 0; }
 
     /* ── QUEM PODE ── */
     .who { border-bottom: 1px solid var(--border); }
@@ -170,7 +171,8 @@
     }
     .benefit:nth-child(4n)        { border-right: none; }
     .benefit:nth-last-child(-n+4) { border-bottom: none; }
-    .benefit__icon  { font-size: 24px; margin-bottom: 12px; display: block; }
+    .benefit__icon  { display: block; width: 28px; height: 28px; margin-bottom: 14px; color: var(--primary); }
+    .benefit__icon svg { width: 100%; height: 100%; }
     .benefit__title { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
     .benefit__desc  { font-size: 12px; color: var(--text); line-height: 1.55; }
 
@@ -236,13 +238,15 @@
     .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
 
     .form-privacy { font-size: 10px; color: #aab8b2; text-align: center; margin-top: 12px; line-height: 1.5; }
+    .form-privacy .icon-inline { vertical-align: -0.15em; margin-right: 3px; }
 
     /* Estados do form */
     .form-success {
       display: none;
       text-align: center; padding: 32px 0;
     }
-    .form-success__icon  { font-size: 40px; margin-bottom: 12px; }
+    .form-success__icon  { width: 48px; height: 48px; margin: 0 auto 12px; color: var(--primary); }
+    .form-success__icon svg { width: 100%; height: 100%; }
     .form-success__title { font-size: 17px; font-weight: 900; margin-bottom: 8px; }
     .form-success__text  { font-size: 13px; color: var(--text); line-height: 1.65; }
     .form-error {
@@ -299,14 +303,17 @@
 
     /* ── TRUST BAR ── */
     .trustbar {
-      background: var(--primary);
-      padding: 18px 5%;
+      background: var(--cream);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 5%;
     }
     .trustbar .container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .trust-item { display: flex; align-items: center; gap: 10px; }
-    .trust-item__icon  { font-size: 22px; opacity: .85; flex-shrink: 0; }
-    .trust-item__title { font-size: 11px; font-weight: 700; color: #fff; }
-    .trust-item__sub   { font-size: 10px; color: rgba(255,255,255,.75); }
+    .trust-item { display: flex; align-items: center; gap: 12px; }
+    .trust-item__icon  { width: 26px; height: 26px; color: var(--primary); flex-shrink: 0; }
+    .trust-item__icon svg { width: 100%; height: 100%; }
+    .trust-item__title { font-size: 12px; font-weight: 700; color: var(--dark); }
+    .trust-item__sub   { font-size: 11px; color: var(--text); }
 
     /* ── FOOTER ── */
     .footer { background: var(--dark); color: rgba(255,255,255,.7); }
@@ -388,7 +395,7 @@
         <p class="cta-title">Seja um Uvits Pro Prescritor</p>
         <p class="cta-text">Cadastre-se gratuitamente e acesse todos os benefícios exclusivos do programa.</p>
         <a class="btn-primary" href="#form">Quero me cadastrar →</a>
-        <span class="btn-note">🔒 Cadastro gratuito · Sem mensalidade</span>
+        <span class="btn-note"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Cadastro gratuito · Sem mensalidade</span>
       </div>
     </div>
   </section>
@@ -432,14 +439,14 @@
       <p class="eyebrow">Benefícios exclusivos</p>
       <h2 class="section-title">Aproveite as vantagens de fazer parte do Uvits Pro Prescritor.</h2>
       <div class="benefits-grid">
-        <div class="benefit"><span class="benefit__icon">💰</span><p class="benefit__title">Condições exclusivas</p><p class="benefit__desc">Preços especiais e vantagens únicas para prescritores</p></div>
-        <div class="benefit"><span class="benefit__icon">💊</span><p class="benefit__title">Linha completa</p><p class="benefit__desc">Acesso a todo o portfólio de vitaminas líquidas Uvits</p></div>
-        <div class="benefit"><span class="benefit__icon">🏷️</span><p class="benefit__title">Cupom para pacientes</p><p class="benefit__desc">Desconto exclusivo para quem chega pela sua indicação</p></div>
-        <div class="benefit"><span class="benefit__icon">🔬</span><p class="benefit__title">Formulações clínicas</p><p class="benefit__desc">Vitaminas líquidas com grau farmacêutico e alta absorção</p></div>
-        <div class="benefit"><span class="benefit__icon">📋</span><p class="benefit__title">Laudos & CoA</p><p class="benefit__desc">Laudos microbiológicos e fichas técnicas completas</p></div>
-        <div class="benefit"><span class="benefit__icon">🎓</span><p class="benefit__title">Suporte científico</p><p class="benefit__desc">Canal exclusivo de WhatsApp com equipe técnica</p></div>
-        <div class="benefit"><span class="benefit__icon">✅</span><p class="benefit__title">Certificação ANVISA</p><p class="benefit__desc">Todos os produtos certificados e auditados</p></div>
-        <div class="benefit"><span class="benefit__icon">🚚</span><p class="benefit__title">Entrega prioritária</p><p class="benefit__desc">Envio em até 24h para todo o Brasil</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span><p class="benefit__title">Condições exclusivas</p><p class="benefit__desc">Preços especiais e vantagens únicas para prescritores</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg></span><p class="benefit__title">Linha completa</p><p class="benefit__desc">Acesso a todo o portfólio de vitaminas líquidas Uvits</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 11v2"/><path d="M13 17v2"/></svg></span><p class="benefit__title">Cupom para pacientes</p><p class="benefit__desc">Desconto exclusivo para quem chega pela sua indicação</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/></svg></span><p class="benefit__title">Formulações clínicas</p><p class="benefit__desc">Vitaminas líquidas com grau farmacêutico e alta absorção</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/></svg></span><p class="benefit__title">Laudos & CoA</p><p class="benefit__desc">Laudos microbiológicos e fichas técnicas completas</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></span><p class="benefit__title">Suporte científico</p><p class="benefit__desc">Canal exclusivo de WhatsApp com equipe técnica</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg></span><p class="benefit__title">Certificação ANVISA</p><p class="benefit__desc">Todos os produtos certificados e auditados</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1"/><path d="M14 9h4l3 3v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><p class="benefit__title">Entrega prioritária</p><p class="benefit__desc">Envio em até 24h para todo o Brasil</p></div>
       </div>
     </div>
   </section>
@@ -497,12 +504,12 @@
           </div>
 
           <div class="form-success" id="form-success">
-            <div class="form-success__icon">✅</div>
+            <div class="form-success__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg></div>
             <p class="form-success__title">Cadastro enviado!</p>
             <p class="form-success__text">Obrigado! Você receberá um e-mail de confirmação em breve.<br>Nossa equipe validará seu cadastro em até 24 horas úteis.</p>
           </div>
 
-          <p class="form-privacy">🔒 Dados protegidos pela LGPD · Nenhuma informação compartilhada com terceiros</p>
+          <p class="form-privacy"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Dados protegidos pela LGPD · Nenhuma informação compartilhada com terceiros</p>
         </div>
       </div>
     </div>
@@ -530,10 +537,10 @@
   <!-- TRUST BAR -->
   <div class="trustbar">
     <div class="container">
-      <div class="trust-item"><span class="trust-item__icon">🔒</span><div><p class="trust-item__title">Loja 100% segura</p><p class="trust-item__sub">Selo de segurança</p></div></div>
-      <div class="trust-item"><span class="trust-item__icon">🚚</span><div><p class="trust-item__title">Frete Grátis</p><p class="trust-item__sub">acima de R$ 99,90</p></div></div>
-      <div class="trust-item"><span class="trust-item__icon">💳</span><div><p class="trust-item__title">Parcele suas compras</p><p class="trust-item__sub">no cartão de crédito</p></div></div>
-      <div class="trust-item"><span class="trust-item__icon">💸</span><div><p class="trust-item__title">Desconto de 5%</p><p class="trust-item__sub">em compras no PIX</p></div></div>
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><div><p class="trust-item__title">Loja 100% segura</p><p class="trust-item__sub">Selo de segurança</p></div></div>
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1"/><path d="M14 9h4l3 3v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><div><p class="trust-item__title">Frete Grátis</p><p class="trust-item__sub">acima de R$ 99,90</p></div></div>
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span><div><p class="trust-item__title">Parcele suas compras</p><p class="trust-item__sub">no cartão de crédito</p></div></div>
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span><div><p class="trust-item__title">Desconto de 5%</p><p class="trust-item__sub">em compras no PIX</p></div></div>
     </div>
   </div>
 
