@@ -290,6 +290,22 @@
     .btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
     .btn-outline:disabled { opacity: .5; cursor: not-allowed; }
 
+    /* Zona de exclusão (delete) */
+    .btn-danger {
+      background: var(--danger); color: #fff; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 700; padding: 11px 16px; cursor: pointer; transition: opacity .2s;
+    }
+    .btn-danger:hover:not(:disabled) { opacity: .88; }
+    .btn-danger:disabled { opacity: .45; cursor: not-allowed; }
+    .danger-zone { border: 1px solid #f3c9c9; background: #fff7f7; border-radius: 10px; padding: 16px; }
+    .danger-zone__title { font-size: 12px; font-weight: 800; color: var(--danger); margin-bottom: 4px; }
+    .danger-text { font-size: 12px; color: var(--text); margin-bottom: 10px; line-height: 1.5; }
+    .confirm-input {
+      width: 100%; padding: 10px 13px; border: 1px solid #e6b8b8; border-radius: 8px;
+      font-size: 13px; outline: none; margin-bottom: 10px;
+    }
+    .confirm-input:focus { border-color: var(--danger); }
+
     /* ── MODAL DETALHES ── */
     .overlay {
       position: fixed; inset: 0;
@@ -576,6 +592,23 @@
 
     <button class="btn-salvar" id="btn-salvar" onclick="salvarAlteracoes()">Salvar alterações</button>
     <p class="modal-feedback" id="modal-feedback"></p>
+
+    <hr class="modal-divider">
+    <div class="danger-zone">
+      <p class="danger-zone__title">Zona de exclusão</p>
+      <p class="danger-text">Excluir é permanente e não pode ser desfeito.</p>
+      <button class="btn-danger" id="btn-excluir" onclick="mostrarConfirmExclusao()">Excluir cadastro</button>
+
+      <div id="confirm-exclusao" style="display:none;margin-top:12px;">
+        <p class="danger-text">Para confirmar, digite <strong>delete</strong> abaixo:</p>
+        <input class="confirm-input" id="confirm-input" type="text" placeholder="delete"
+               autocomplete="off" oninput="validarConfirmExclusao()">
+        <div style="display:flex;gap:8px;">
+          <button class="btn-danger" id="btn-confirma-excluir" onclick="excluirPrescritor()" disabled>Confirmar exclusão</button>
+          <button class="btn-outline" onclick="cancelarExclusao()">Cancelar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -886,6 +919,8 @@
     document.getElementById('btn-salvar').disabled             = false;
     document.getElementById('btn-salvar').textContent          = 'Salvar alterações';
 
+    cancelarExclusao(); // garante a zona de exclusão recolhida ao abrir
+
     document.getElementById('overlay').classList.add('open');
   }
 
@@ -936,6 +971,57 @@
     } finally {
       btn.disabled    = false;
       btn.textContent = 'Salvar alterações';
+    }
+  }
+
+  // ── EXCLUSÃO (com dupla checagem) ───────────────────────────────────────────
+  function mostrarConfirmExclusao() {
+    document.getElementById('btn-excluir').style.display = 'none';
+    document.getElementById('confirm-exclusao').style.display = 'block';
+    const inp = document.getElementById('confirm-input');
+    inp.value = '';
+    validarConfirmExclusao();
+    inp.focus();
+  }
+
+  function cancelarExclusao() {
+    const conf = document.getElementById('confirm-exclusao');
+    const btn  = document.getElementById('btn-excluir');
+    if (conf) conf.style.display = 'none';
+    if (btn)  btn.style.display = 'inline-block';
+    const inp = document.getElementById('confirm-input');
+    if (inp) inp.value = '';
+  }
+
+  function validarConfirmExclusao() {
+    const ok = document.getElementById('confirm-input').value.trim().toLowerCase() === 'delete';
+    document.getElementById('btn-confirma-excluir').disabled = !ok;
+  }
+
+  async function excluirPrescritor() {
+    if (!prescritorAtual) return;
+    // Dupla checagem: precisa ter digitado exatamente "delete"
+    if (document.getElementById('confirm-input').value.trim().toLowerCase() !== 'delete') return;
+
+    const btn      = document.getElementById('btn-confirma-excluir');
+    const feedback = document.getElementById('modal-feedback');
+    btn.disabled = true; btn.textContent = 'Excluindo...';
+    feedback.className = 'modal-feedback'; feedback.textContent = '';
+
+    try {
+      const res = await apiFetch(`/api/prescritores?id=${prescritorAtual.id}`, 'DELETE');
+      if (res.status === 401) { sair(); return; }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao excluir');
+
+      cacheRows = cacheRows.filter(r => r.id !== prescritorAtual.id);
+      prescritorAtual = null;
+      document.getElementById('overlay').classList.remove('open');
+      carregarDados();
+    } catch (e) {
+      feedback.textContent = e.message || 'Erro ao excluir';
+      feedback.className   = 'modal-feedback err';
+      btn.disabled = false; btn.textContent = 'Confirmar exclusão';
     }
   }
 

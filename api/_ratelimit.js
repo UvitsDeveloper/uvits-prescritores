@@ -59,5 +59,7 @@ function criarLimiter(prefix, max, windowStr, windowMs) {
 
 const limitarLogin    = criarLimiter('rl:login',    10, '15 m', 15 * 60 * 1000);
 const limitarCadastro = criarLimiter('rl:cadastro',  5, '1 h',  60 * 60 * 1000);
+// Exclusões: teto baixo por janela para impedir delete em larga escala
+const limitarDelete   = criarLimiter('rl:delete',   20, '10 m', 10 * 60 * 1000);
 
-module.exports = { limitarLogin, limitarCadastro, usandoRedis: !!redis };
+module.exports = { limitarLogin, limitarCadastro, limitarDelete, usandoRedis: !!redis };

@@ -1,6 +1,7 @@
 const { sql }      = require('@vercel/postgres');
 const { autenticar } = require('./_auth');
 const { registrarUso } = require('./_usage');
+const { limitarDelete } = require('./_ratelimit');
 
 module.exports = async function handler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -8,7 +9,7 @@ module.exports = async function handler(req, res) {
 
   const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -117,6 +118,29 @@ module.exports = async function handler(req, res) {
     } catch (err) {
       console.error('[prescritores PATCH] erro:', err);
       return res.status(500).json({ error: 'Erro ao atualizar cadastro' });
+    }
+  }
+
+  // ── DELETE /api/prescritores?id= — excluir UM cadastro por vez ─────────────
+  if (req.method === 'DELETE') {
+    // Rate limit: impede exclusões em larga escala (loop de deletes)
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+    if (!(await limitarDelete(ip)))
+      return res.status(429).json({ error: 'Muitas exclusões em sequência. Tente novamente em alguns minutos.' });
+
+    const id = parseInt(req.query.id);
+    if (!id || isNaN(id))
+      return res.status(400).json({ error: 'ID inválido' });
+
+    try {
+      // Exclui estritamente por id único — nunca em massa
+      const { rowCount } = await sql`DELETE FROM prescritores WHERE id = ${id}`;
+      if (rowCount === 0)
+        return res.status(404).json({ error: 'Cadastro não encontrado' });
+      return res.status(200).json({ success: true, id });
+    } catch (err) {
+      console.error('[prescritores DELETE] erro:', err);
+      return res.status(500).json({ error: 'Erro ao excluir cadastro' });
     }
   }
 
