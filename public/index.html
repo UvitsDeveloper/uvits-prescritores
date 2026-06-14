@@ -316,6 +316,7 @@
     .trust-item__icon svg { width: 100%; height: 100%; }
     .trust-item__title { font-size: 12px; font-weight: 700; color: var(--dark); }
     .trust-item__sub   { font-size: 11px; color: var(--text); }
+    .trust-dots { display: none; }
 
     /* ── FOOTER ── */
     .footer { background: var(--dark); color: rgba(255,255,255,.7); }
@@ -371,7 +372,19 @@
     @media (max-width: 560px) {
       .benefits-grid { grid-template-columns: 1fr; }
       .benefit { border-right: none !important; }
-      .trustbar .container { grid-template-columns: 1fr; }
+      /* Trust bar vira carrossel (um item por vez) */
+      .trustbar { overflow: hidden; }
+      .trustbar .container {
+        grid-template-columns: none; display: flex; flex-wrap: nowrap;
+        gap: 0; transition: transform .4s ease;
+      }
+      .trust-item { flex: 0 0 100%; min-width: 100%; justify-content: center; }
+      .trust-dots { display: flex; justify-content: center; gap: 7px; padding-top: 14px; }
+      .trust-dots span {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: rgba(255,255,255,.45); cursor: pointer; transition: all .2s;
+      }
+      .trust-dots span.active { background: #fff; width: 18px; border-radius: 4px; }
       .prof-grid { grid-template-columns: 1fr; }
       .field--half { grid-template-columns: 1fr; }
       .footer__grid { grid-template-columns: 1fr; gap: 36px; }
@@ -558,6 +571,7 @@
       <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span><div><p class="trust-item__title">Parcele suas compras</p><p class="trust-item__sub">no cartão de crédito</p></div></div>
       <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span><div><p class="trust-item__title">Desconto de 5%</p><p class="trust-item__sub">em compras no PIX</p></div></div>
     </div>
+    <div class="trust-dots" id="trust-dots"></div>
   </div>
 
   <!-- FOOTER -->
@@ -768,7 +782,57 @@
         if (campos) campos.style.display = 'none';
         if (aviso)  aviso.style.display = 'block';
       }
+
+      iniciarCarrosselTrust();
     });
+
+    // Carrossel da trust bar — só no mobile. Auto-avança, permite controle
+    // manual (swipe/dots) e volta ao automático após 6s sem interação.
+    function iniciarCarrosselTrust() {
+      const track = document.querySelector('.trustbar .container');
+      const dotsWrap = document.getElementById('trust-dots');
+      if (!track || !dotsWrap) return;
+      const itens = track.querySelectorAll('.trust-item');
+      const total = itens.length;
+      if (!total) return;
+
+      const mq = window.matchMedia('(max-width: 560px)');
+      let idx = 0, timer = null, resumeTimer = null;
+      const INTERVALO = 3000, RETOMAR_APOS = 6000;
+
+      dotsWrap.innerHTML = Array.from({ length: total })
+        .map((_, i) => `<span data-i="${i}"></span>`).join('');
+      const dots = dotsWrap.querySelectorAll('span');
+
+      function mostrar(i) {
+        idx = (i + total) % total;
+        track.style.transform = `translateX(-${idx * 100}%)`;
+        dots.forEach((d, di) => d.classList.toggle('active', di === idx));
+      }
+      function auto()  { parar(); if (mq.matches) timer = setInterval(() => mostrar(idx + 1), INTERVALO); }
+      function parar() { if (timer) { clearInterval(timer); timer = null; } }
+      function interagiu() { parar(); clearTimeout(resumeTimer); resumeTimer = setTimeout(auto, RETOMAR_APOS); }
+      function irPara(i) { mostrar(i); interagiu(); }
+
+      dots.forEach(d => d.addEventListener('click', () => irPara(parseInt(d.dataset.i))));
+
+      let x0 = null;
+      track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; parar(); }, { passive: true });
+      track.addEventListener('touchend', e => {
+        if (x0 === null) return;
+        const dx = e.changedTouches[0].clientX - x0;
+        if (Math.abs(dx) > 40) mostrar(idx + (dx < 0 ? 1 : -1));
+        x0 = null; interagiu();
+      }, { passive: true });
+
+      function configurar() {
+        clearTimeout(resumeTimer);
+        if (mq.matches) { mostrar(0); auto(); }
+        else { parar(); track.style.transform = ''; dots.forEach(d => d.classList.remove('active')); }
+      }
+      mq.addEventListener ? mq.addEventListener('change', configurar) : mq.addListener(configurar);
+      configurar();
+    }
   </script>
 
 </body>
