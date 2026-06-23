@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uvits Pro Prescritor — Programa para Profissionais de Saúde</title>
+  <meta name="description" content="Programa exclusivo para profissionais de saúde. Cadastre-se e acesse benefícios, materiais científicos e suporte técnico.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:  #2EC4A5;
+      --dark:     #1C2620;
+      --cream:    #F5F1EC;
+      --border:   #E8E3DD;
+      --text:     #5a6b5e;
+      --primary-light: #e8faf6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fff;
+      color: var(--dark);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 640px;
+      display: flex;
+      align-items: flex-end;
+      background: var(--dark);
+      overflow: hidden;
+    }
+    .hero__overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.80) 0%, rgba(0,0,0,.4) 55%, rgba(0,0,0,.2) 100%);
+      z-index: 1;
+    }
+    .hero__bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #1C2620 0%, #2a3d35 50%, #1C2620 100%);
+      background-image: url('https://cdn.shopify.com/s/files/1/0936/2895/6973/files/ChatGPT_Image_12_de_jun._de_2026_16_07_48.png?v=1781291575');
+      background-size: cover;
+      background-position: center;
+    }
+    /* padrão decorativo */
+    .hero__bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 70% 40%, rgba(46,196,165,.15) 0%, transparent 60%);
+    }
+    .hero__content {
+      position: relative; z-index: 2;
+      width: 100%; max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 5% 56px;
+    }
+    .hero__eyebrow {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--primary); margin-bottom: 14px;
+    }
+    .hero__title {
+      font-size: clamp(32px, 4.5vw, 54px);
+      font-weight: 900; line-height: 1.06;
+      letter-spacing: -2px; color: #fff;
+      max-width: 640px; margin-bottom: 16px;
+    }
+    .hero__title em { font-style: normal; color: var(--primary); }
+    .hero__sub {
+      font-size: 16px; color: rgba(255,255,255,.6);
+      line-height: 1.7; max-width: 480px;
+    }
+
+    /* ── LAYOUT GERAL ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
+
+    /* ── SPLIT ── */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .split__left  { padding: 64px 5% 64px 0; border-right: 1px solid var(--border); }
+    .split__right { padding: 64px 0 64px 5%; background: var(--cream); display: flex; flex-direction: column; justify-content: center; }
+
+    /* ── TIPOGRAFIA ── */
+    .eyebrow {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--primary);
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .eyebrow::before {
+      content: ''; width: 14px; height: 2px;
+      background: var(--primary); flex-shrink: 0;
+    }
+    .section-title {
+      font-size: clamp(22px, 2.4vw, 30px);
+      font-weight: 900; letter-spacing: -0.8px;
+      line-height: 1.12; margin-bottom: 14px;
+    }
+    .section-body {
+      font-size: 15px; color: var(--text); line-height: 1.75;
+    }
+
+    /* ── INTRO ── */
+    .intro { border-bottom: 1px solid var(--border); }
+    .intro .container { display: grid; grid-template-columns: 1fr 1fr; }
+    .intro__left  { padding: 64px 5% 64px 0; border-right: 1px solid var(--border); }
+    .intro__right { padding: 64px 0 64px 5%; display: flex; flex-direction: column; justify-content: center; }
+    .cta-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #aab8b2; margin-bottom: 8px;
+    }
+    .cta-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 10px; }
+    .cta-text  { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 22px; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--dark); color: #fff;
+      font-size: 16px; font-weight: 700;
+      padding: 18px 34px; border-radius: 10px;
+      text-decoration: none; margin-bottom: 12px;
+      transition: opacity .2s;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-note { font-size: 12px; color: #aab8b2; display: inline-flex; align-items: center; gap: 6px; }
+    .icon-inline { width: 1em; height: 1em; flex-shrink: 0; }
+
+    /* ── QUEM PODE ── */
+    .who { border-bottom: 1px solid var(--border); }
+    .who .container { display: grid; grid-template-columns: 1fr 1fr; }
+    .who__left  { padding: 64px 5% 64px 0; border-right: 1px solid var(--border); }
+    .who__right {
+      padding: 64px 5%;
+      background: var(--cream);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .prof-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; }
+    .prof-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 500; color: var(--dark);
+    }
+    .prof-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+    .who__visual {
+      width: 100%; max-width: 320px;
+      background: var(--primary-light);
+      border-radius: 16px;
+      padding: 32px 28px;
+      border: 1px solid rgba(46,196,165,.2);
+    }
+    .who__visual-title { font-size: 16px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+    .who__visual-sub   { font-size: 13px; color: var(--text); margin-bottom: 20px; }
+    .who__stat { margin-bottom: 14px; }
+    .who__stat-num   { font-size: 28px; font-weight: 900; color: var(--primary); letter-spacing: -1px; line-height: 1; }
+    .who__stat-label { font-size: 12px; color: var(--text); margin-top: 2px; }
+
+    /* ── BENEFÍCIOS ── */
+    .benefits { padding: 64px 0; border-bottom: 1px solid var(--border); }
+    .benefits-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; margin-top: 32px;
+    }
+    .benefit {
+      padding: 36px 24px 32px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .benefit:nth-child(4n)        { border-right: none; }
+    .benefit:nth-last-child(-n+4) { border-bottom: none; }
+    .benefit__icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--primary);
+      margin: 0 auto 20px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .badge-pill {
+      display: inline-flex; align-items: center;
+      background: var(--primary); color: #fff;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 99px;
+      vertical-align: middle; margin-left: 8px;
+    }
+    .benefit__icon svg { width: 36px; height: 36px; }
+    .benefit__title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .benefit__desc  { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+    /* ── FORMULÁRIO ── */
+    .form-section { border-bottom: 1px solid var(--border); }
+    .form-section .container { display: grid; grid-template-columns: 1fr 1fr; }
+    .form-section__left  { padding: 64px 5% 64px 0; border-right: 1px solid var(--border); }
+    .form-section__right { padding: 64px 5%; background: var(--cream); display: flex; align-items: center; justify-content: center; }
+    .steps { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+    .step  { display: flex; align-items: flex-start; gap: 12px; }
+    .step__num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step__title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .step__sub   { font-size: 13px; color: var(--text); }
+
+    /* Card do form */
+    .form-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 28px 24px;
+      width: 100%;
+    }
+    .form-card__title { font-size: 18px; font-weight: 900; letter-spacing: -0.4px; margin-bottom: 4px; }
+    .form-card__sub   { font-size: 13px; color: var(--text); margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 5px; letter-spacing: .3px; }
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--dark);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+      appearance: none;
+    }
+    .field input:focus,
+    .field select:focus { border-color: var(--primary); }
+    .field input.input-error,
+    .field select.input-error { border-color: #c0392b; background: #fff7f7; }
+    .field--half { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px; font-weight: 700;
+      padding: 18px;
+      border: none; border-radius: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity .2s;
+    }
+    .btn-submit:hover    { opacity: .88; }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    .form-privacy { font-size: 11px; color: #aab8b2; text-align: center; margin-top: 12px; line-height: 1.5; }
+    .form-privacy .icon-inline { vertical-align: -0.15em; margin-right: 3px; }
+
+    /* Estados do form */
+    .form-success {
+      display: none;
+      text-align: center; padding: 32px 0;
+    }
+    .form-success__icon  { width: 48px; height: 48px; margin: 0 auto 12px; color: var(--primary); }
+    .form-success__icon svg { width: 100%; height: 100%; }
+    .form-success__title { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+    .form-success__text  { font-size: 14px; color: var(--text); line-height: 1.65; }
+    .form-error {
+      display: none;
+      background: #fff0f0; border: 1px solid #fcc;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 12px; color: #c0392b;
+      margin-top: 10px;
+    }
+
+    /* ── MANIFESTO ── */
+    .manifesto {
+      position: relative; overflow: hidden;
+      min-height: 340px; display: flex; align-items: center;
+      background: var(--dark);
+    }
+    .manifesto__bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #1C2620 0%, #2a3d35 100%);
+    }
+    .manifesto__bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 50%, rgba(46,196,165,.12) 0%, transparent 60%);
+    }
+    .manifesto__overlay { position: absolute; inset: 0; background: rgba(20,30,22,.6); }
+    .manifesto__inner {
+      position: relative; z-index: 1;
+      width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 48px; align-items: center;
+      padding: 64px 5%;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .manifesto__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--primary); margin-bottom: 12px; }
+    .manifesto__title   { font-size: clamp(22px, 2.5vw, 32px); font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.15; margin-bottom: 14px; }
+    .manifesto__text    { font-size: 15px; color: rgba(255,255,255,.55); line-height: 1.7; margin-bottom: 28px; }
+    .btn-teal {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--primary); color: #fff;
+      font-size: 16px; font-weight: 700;
+      padding: 18px 34px; border-radius: 10px;
+      text-decoration: none; transition: opacity .2s;
+    }
+    .btn-teal:hover { opacity: .88; }
+    .stats { display: flex; flex-direction: column; gap: 14px; }
+    .stat {
+      padding: 18px 20px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px;
+      background: rgba(255,255,255,.05);
+    }
+    .stat__num   { font-size: 28px; font-weight: 900; color: var(--primary); letter-spacing: -1px; display: block; line-height: 1; }
+    .stat__label { font-size: 13px; color: rgba(255,255,255,.45); margin-top: 4px; }
+
+    /* ── TRUST BAR ── */
+    .trustbar {
+      background: var(--cream);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 5%;
+    }
+    .trustbar .container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .trust-item { display: flex; align-items: center; gap: 12px; }
+    .trust-item__icon  { width: 26px; height: 26px; color: var(--primary); flex-shrink: 0; }
+    .trust-item__icon svg { width: 100%; height: 100%; }
+    .trust-item__title { font-size: 13px; font-weight: 700; color: var(--dark); }
+    .trust-item__sub   { font-size: 12px; color: var(--text); }
+    .trust-dots { display: none; }
+
+    /* ── FOOTER ── */
+    .footer { background: var(--dark); color: rgba(255,255,255,.7); }
+    .footer__grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 48px;
+      padding-top: 64px;
+      padding-bottom: 56px;
+    }
+    .footer__logo { height: 36px; margin-bottom: 18px; }
+    .footer__tagline { font-size: 15px; line-height: 1.6; max-width: 360px; margin-bottom: 22px; }
+    .footer__social { display: flex; flex-wrap: wrap; gap: 14px; }
+    .footer__social a { display: inline-flex; color: rgba(255,255,255,.7); text-decoration: none; transition: color .2s, transform .2s; }
+    .footer__social a:hover { color: var(--primary); transform: translateY(-2px); }
+    .footer__social svg { width: 22px; height: 22px; }
+    .footer__heading { color: #fff; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 18px; }
+    .footer__links { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .footer__links a { color: rgba(255,255,255,.7); font-size: 15px; text-decoration: none; transition: color .2s; }
+    .footer__links a:hover { color: var(--primary); }
+    .footer__bottom { border-top: 1px solid rgba(255,255,255,.1); padding: 24px 0; }
+    .footer__bottom-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .footer__copy { font-size: 13px; color: rgba(255,255,255,.55); }
+    .footer__pay { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .footer__pay svg { width: 38px; height: 24px; display: block; border-radius: 4px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 860px) {
+      .intro .container,
+      .who .container,
+      .form-section .container { grid-template-columns: 1fr; }
+      .intro__left, .who__left, .form-section__left { border-right: none; border-bottom: 1px solid var(--border); padding: 48px 0; }
+      .intro__right { padding: 48px 0; }
+      /* Áreas bege ocupam a largura total da tela (full-bleed) com o conteúdo centralizado */
+      .who__right, .form-section__right {
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding: 48px 5%;
+        justify-content: center;
+      }
+      .who__visual { max-width: 360px; }
+      .benefits-grid {
+        grid-template-columns: 1fr 1fr;
+        border: none; gap: 8px;
+        border-radius: 0; background: transparent;
+      }
+      .benefit {
+        border: 1px solid var(--border) !important;
+        border-radius: 12px;
+        background: #fff;
+        padding: 20px 14px;
+      }
+      .benefit__icon {
+        width: 48px; height: 48px;
+        background: var(--primary); color: #fff;
+        margin-bottom: 12px;
+      }
+      .benefit__icon svg { width: 22px; height: 22px; }
+      .benefit__title { color: var(--dark); }
+      .benefit__desc  { color: var(--text); }
+      .manifesto__inner { grid-template-columns: 1fr; }
+      .trustbar .container { grid-template-columns: 1fr 1fr; }
+      .footer__grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .footer__brand { grid-column: 1 / -1; }
+      .hero { min-height: 420px; }
+      /* Tamanhos de fonte originais — aumentos só valem no desktop */
+      .hero__eyebrow    { font-size: 10px; }
+      .hero__sub        { font-size: 15px; }
+      .eyebrow          { font-size: 9px; }
+      .section-body     { font-size: 14px; }
+      .cta-label        { font-size: 9px; }
+      .cta-text         { font-size: 13px; }
+      .btn-note         { font-size: 11px; }
+      .prof-item        { font-size: 13px; }
+      .who__visual-title { font-size: 15px; }
+      .who__visual-sub  { font-size: 12px; }
+      .who__stat-label  { font-size: 11px; }
+      .benefit__title   { font-size: 14px; }
+      .benefit__desc    { font-size: 12px; }
+      .step__title      { font-size: 13px; }
+      .step__sub        { font-size: 12px; }
+      .form-card__title { font-size: 17px; }
+      .form-card__sub   { font-size: 12px; }
+      .field label      { font-size: 11px; }
+      .field input,
+      .field select     { font-size: 13px; }
+      .form-privacy     { font-size: 10px; }
+      .form-success__title { font-size: 17px; }
+      .form-success__text  { font-size: 13px; }
+      .manifesto__eyebrow  { font-size: 9px; }
+      .manifesto__text     { font-size: 14px; }
+      .stat__label         { font-size: 12px; }
+      .trust-item__title   { font-size: 12px; }
+      .trust-item__sub     { font-size: 11px; }
+      .footer__tagline     { font-size: 14px; }
+      .footer__heading     { font-size: 13px; }
+      .footer__links a     { font-size: 14px; }
+      .footer__copy        { font-size: 12px; }
+    }
+    @media (max-width: 560px) {
+      .benefits-grid { grid-template-columns: 1fr; }
+      /* Trust bar vira carrossel (um item por vez) */
+      .trustbar { overflow: hidden; }
+      .trustbar .container {
+        grid-template-columns: none; display: flex; flex-wrap: nowrap;
+        gap: 0; padding: 0; transition: transform .4s ease;
+        touch-action: pan-y; cursor: grab; user-select: none;
+      }
+      .trust-item { flex: 0 0 100%; min-width: 100%; justify-content: center; text-align: left; }
+      .trust-dots { display: flex; justify-content: center; gap: 7px; padding-top: 14px; }
+      .trust-dots span {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: rgba(28,38,32,.22); cursor: pointer; transition: all .2s;
+      }
+      .trust-dots span.active { background: var(--primary); width: 18px; border-radius: 4px; }
+      .prof-grid { grid-template-columns: 1fr; }
+      .field--half { grid-template-columns: 1fr; }
+      .footer__grid { grid-template-columns: 1fr; gap: 36px; }
+      .footer__bottom-inner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__bg"></div>
+    <div class="hero__overlay"></div>
+    <div class="hero__content">
+      <p class="hero__eyebrow">Programa de prescritores</p>
+      <h1 class="hero__title">Queremos estar cada vez mais perto de <em>você.</em></h1>
+      <p class="hero__sub">O Uvits Pro Prescritor é um programa exclusivo para profissionais da saúde que oferece benefícios, materiais técnicos e suporte científico.</p>
+    </div>
+  </section>
+
+  <!-- INTRO -->
+  <section class="intro">
+    <div class="container">
+      <div class="intro__left">
+        <p class="eyebrow">Sobre o programa</p>
+        <h2 class="section-title">O que é o Uvits Pro Prescritor?</h2>
+        <p class="section-body">O Uvits Pro Prescritor é um programa de relacionamento exclusivo para profissionais da saúde que oferece uma série de benefícios.</p>
+        <p class="section-body" style="margin-top:12px;">Nosso desejo é oferecer informações atualizadas, estudos científicos e serviços que façam diferença no dia a dia dos profissionais que nos acompanham.</p>
+      </div>
+      <div class="intro__right">
+        <p class="cta-label">Faça parte</p>
+        <p class="cta-title">Seja um Uvits Pro Prescritor</p>
+        <p class="cta-text">Cadastre-se gratuitamente e acesse todos os benefícios exclusivos do programa.</p>
+        <a class="btn-primary" href="#form">Quero me cadastrar →</a>
+        <span class="btn-note"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Cadastro gratuito · Sem mensalidade</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUEM PODE PARTICIPAR -->
+  <section class="who">
+    <div class="container">
+      <div class="who__left">
+        <p class="eyebrow">Quem pode participar</p>
+        <h2 class="section-title">Exclusivo para médicos e nutricionistas</h2>
+        <p class="section-body">O programa é destinado a profissionais com registro ativo no <strong>CRM</strong> ou <strong>CRN</strong> que compartilham dos nossos ideais de saúde. Validamos cada cadastro individualmente para garantir a qualidade da nossa rede.</p>
+        <div class="prof-grid">
+          <div class="prof-item"><div class="prof-dot"></div> Médico(a) — CRM ativo</div>
+          <div class="prof-item"><div class="prof-dot"></div> Nutricionista — CRN ativo</div>
+        </div>
+      </div>
+      <div class="who__right">
+        <div class="who__visual">
+          <p class="who__visual-title">Programa Uvits Pro</p>
+          <p class="who__visual-sub">Benefícios exclusivos para quem cuida da saúde</p>
+          <div class="who__stat">
+            <div class="who__stat-num">+15.000</div>
+            <div class="who__stat-label">Avaliações 5 estrelas verificadas</div>
+          </div>
+          <div class="who__stat">
+            <div class="who__stat-num">+500</div>
+            <div class="who__stat-label">Prescritores ativos na rede Uvits</div>
+          </div>
+          <div class="who__stat">
+            <div class="who__stat-num">100%</div>
+            <div class="who__stat-label">Produtos certificados pela ANVISA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFÍCIOS -->
+  <section class="benefits">
+    <div class="container">
+      <p class="eyebrow">Benefícios exclusivos</p>
+      <h2 class="section-title">Aproveite as vantagens de fazer parte do Uvits Pro Prescritor.</h2>
+      <div class="benefits-grid">
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span><p class="benefit__title">Condições exclusivas</p><p class="benefit__desc">Preços especiais e vantagens únicas para prescritores</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg></span><p class="benefit__title">Linha completa</p><p class="benefit__desc">Acesso a todo o portfólio de vitaminas líquidas Uvits</p></div>
+<div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/></svg></span><p class="benefit__title">Formulações clínicas</p><p class="benefit__desc">Vitaminas líquidas com grau farmacêutico e alta absorção</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/></svg></span><p class="benefit__title">Laudos & CoA</p><p class="benefit__desc">Laudos microbiológicos e fichas técnicas completas</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></span><p class="benefit__title">Suporte científico</p><p class="benefit__desc">Canal exclusivo de WhatsApp com equipe técnica</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg></span><p class="benefit__title">Certificação ANVISA</p><p class="benefit__desc">Todos os produtos certificados e auditados</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1"/><path d="M14 9h4l3 3v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><p class="benefit__title">Entrega prioritária</p><p class="benefit__desc">Envio em até 24h para todo o Brasil</p></div>
+        <div class="benefit"><span class="benefit__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span><p class="benefit__title">Acesso antecipado</p><p class="benefit__desc">Seja o primeiro a conhecer novos suplementos antes do lançamento</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORMULÁRIO -->
+  <section class="form-section" id="form">
+    <div class="container">
+      <div class="form-section__left">
+        <p class="eyebrow">Cadastre-se</p>
+        <h2 class="section-title">Cadastre-se no Uvits Pro Prescritor</h2>
+        <p class="section-body">Preencha o formulário ao lado. Nossa equipe valida as informações e entra em contato em até 24 horas úteis.</p>
+        <div class="steps">
+          <div class="step"><div class="step__num">1</div><div><p class="step__title">Preencha o formulário</p><p class="step__sub">Dados profissionais e registro no conselho</p></div></div>
+          <div class="step"><div class="step__num">2</div><div><p class="step__title">Validação em até 24h</p><p class="step__sub">Conferimos seu registro no CRM ou CRN</p></div></div>
+          <div class="step"><div class="step__num">3</div><div><p class="step__title">Contato da nossa equipe</p><p class="step__sub">Você recebe as condições exclusivas pelo WhatsApp</p></div></div>
+          <div class="step"><div class="step__num">4</div><div><p class="step__title">Comece a indicar</p><p class="step__sub">Benefícios para você e para os seus pacientes</p></div></div>
+        </div>
+      </div>
+      <div class="form-section__right">
+        <div class="form-card">
+          <p class="form-card__title">Seja um prescritor</p>
+          <p class="form-card__sub">Preencha os campos para prosseguir</p>
+
+          <div id="form-fields">
+            <div class="field">
+              <label for="nome">Nome completo *</label>
+              <input type="text" id="nome" placeholder="Dr(a). Nome Sobrenome" required>
+            </div>
+            <div class="field">
+              <label for="email">E-mail profissional *</label>
+              <input type="email" id="email" placeholder="seu@email.com.br" required>
+            </div>
+            <div class="field">
+              <label for="email-confirma">Confirme o e-mail *</label>
+              <input type="email" id="email-confirma" placeholder="repita seu e-mail" required onpaste="return false;">
+            </div>
+            <div class="field--half">
+              <div class="field">
+                <label for="whatsapp">WhatsApp *</label>
+                <input type="tel" id="whatsapp" placeholder="(11) 99999-9999" required>
+              </div>
+              <div class="field">
+                <label for="profissao">Profissão *</label>
+                <select id="profissao" required onchange="atualizarConselho()">
+                  <option value="">Selecione...</option>
+                  <option>Médico(a)</option>
+                  <option>Nutricionista</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="conselho" id="conselho-label">Nº do conselho *</label>
+              <input type="text" id="conselho" placeholder="Selecione sua profissão primeiro" required disabled>
+            </div>
+            <button class="btn-submit" id="btn-submit" onclick="enviarFormulario()">
+              Quero me cadastrar →
+            </button>
+            <div class="form-error" id="form-error"></div>
+          </div>
+
+          <div class="form-success" id="form-already" style="display:none;">
+            <div class="form-success__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg></div>
+            <p class="form-success__title">Você já está cadastrado!</p>
+            <p class="form-success__text">Recebemos seu cadastro neste navegador. Nossa equipe valida as informações e entra em contato pelo WhatsApp em até 24 horas úteis.</p>
+            <a class="btn-submit" href="obrigado.html" style="display:inline-block;width:auto;padding:14px 28px;margin-top:18px;text-decoration:none;">Ver confirmação →</a>
+          </div>
+
+          <p class="form-privacy"><svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Dados protegidos pela LGPD · Nenhuma informação compartilhada com terceiros</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="manifesto">
+    <div class="manifesto__bg"></div>
+    <div class="manifesto__overlay"></div>
+    <div class="manifesto__inner">
+      <div>
+        <p class="manifesto__eyebrow">Nosso propósito</p>
+        <h2 class="manifesto__title">Nosso desejo é contribuir para o desenvolvimento da saúde.</h2>
+        <p class="manifesto__text">É com esse querer que desenvolvemos as vitaminas Uvits — líquidas, de alta absorção, para servir ao desenvolvimento do ser humano e honrar o cuidado com o corpo.</p>
+        <a class="btn-teal" href="#form">Quero me cadastrar →</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="stat__num">+15.000</span><p class="stat__label">Avaliações 5 estrelas verificadas</p></div>
+        <div class="stat"><span class="stat__num">+500</span><p class="stat__label">Prescritores ativos na rede Uvits</p></div>
+        <div class="stat"><span class="stat__num">100%</span><p class="stat__label">Produtos certificados pela ANVISA</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR -->
+  <div class="trustbar">
+    <div class="container">
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><div><p class="trust-item__title">Loja 100% segura</p><p class="trust-item__sub">Selo de segurança</p></div></div>
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1"/><path d="M14 9h4l3 3v5a1 1 0 0 1-1 1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg></span><div><p class="trust-item__title">Frete Grátis</p><p class="trust-item__sub">acima de R$ 99,90</p></div></div>
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span><div><p class="trust-item__title">Parcele suas compras</p><p class="trust-item__sub">no cartão de crédito</p></div></div>
+      <div class="trust-item"><span class="trust-item__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></span><div><p class="trust-item__title">Desconto de 5%</p><p class="trust-item__sub">em compras no PIX</p></div></div>
+    </div>
+    <div class="trust-dots" id="trust-dots"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__grid">
+      <div class="footer__brand">
+        <img class="footer__logo" src="https://www.uvits.com.br/cdn/shop/files/logobrancouvits_21c7b47f-256a-451f-93c6-8e9c03d35028.svg?width=300" alt="Uvits Vitaminas" onerror="this.style.display='none'">
+        <p class="footer__tagline">Vitaminas líquidas de alta absorção, desenvolvidas para honrar o cuidado com o corpo.</p>
+        <div class="footer__social">
+          <a href="https://www.instagram.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="https://www.facebook.com/uvitsvitaminas" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z"/></svg></a>
+          <a href="https://wa.me/5519981336403" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2a9.9 9.9 0 0 0-8.42 15.13L2 22l4.97-1.3A9.9 9.9 0 1 0 12.04 2Zm0 1.8a8.1 8.1 0 0 1 5.74 13.83 8.1 8.1 0 0 1-9.6 1.38l-.35-.2-2.95.77.79-2.87-.23-.37A8.1 8.1 0 0 1 12.04 3.8Zm-3.1 4.3c-.15 0-.4.06-.6.3-.21.23-.8.78-.8 1.9 0 1.12.82 2.2.93 2.36.12.15 1.6 2.55 3.95 3.47 1.96.77 2.36.62 2.78.58.43-.04 1.38-.56 1.58-1.11.2-.55.2-1.02.14-1.12-.06-.1-.21-.15-.45-.27-.23-.12-1.38-.68-1.6-.76-.21-.08-.37-.12-.52.12-.15.23-.59.75-.72.9-.13.16-.27.18-.5.06-.24-.12-1-.37-1.9-1.18-.7-.62-1.18-1.4-1.31-1.63-.14-.23-.01-.36.1-.48.11-.1.24-.27.36-.4.12-.14.16-.24.24-.4.08-.15.04-.29-.02-.4-.06-.12-.52-1.28-.72-1.74-.18-.43-.37-.37-.51-.38h-.45Z"/></svg></a>
+          <a href="https://www.tiktok.com/@uvitsvitaminas" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.1-2.82h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.27 0 .53.04.78.12V9.74a5.7 5.7 0 0 0-.78-.05 5.7 5.7 0 1 0 5.7 5.7V9.01a7.34 7.34 0 0 0 4.3 1.38V7.3a4.28 4.28 0 0 1-3.2-1.48Z"/></svg></a>
+        </div>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__heading">Institucional</h3>
+        <ul class="footer__links">
+          <li><a href="https://uvits.com.br/pages/quem-somos" target="_blank" rel="noopener">Quem Somos</a></li>
+          <li><a href="https://uvits.com.br/pages/perguntas-frequentes" target="_blank" rel="noopener">Perguntas Frequentes</a></li>
+          <li><a href="https://uvits.com.br/blogs/blog" target="_blank" rel="noopener">Blog</a></li>
+          <li><a href="https://uvits.com.br/pages/garantia-de-satisfacao" target="_blank" rel="noopener">Garantia de Satisfação</a></li>
+        </ul>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__heading">Ajuda</h3>
+        <ul class="footer__links">
+          <li><a href="https://uvits.com.br/pages/contato" target="_blank" rel="noopener">Contato</a></li>
+          <li><a href="https://uvits.com.br/policies/privacy-policy" target="_blank" rel="noopener">Política de Privacidade</a></li>
+          <li><a href="https://uvits.com.br/policies/refund-policy" target="_blank" rel="noopener">Política de Trocas e Devoluções</a></li>
+          <li><a href="https://uvits.com.br/policies/refund-policy" target="_blank" rel="noopener">Política de Reembolso</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="container footer__bottom-inner">
+        <p class="footer__copy">© 2026 Uvits Vitaminas · Todos os direitos reservados</p>
+        <div class="footer__pay" aria-label="Formas de pagamento">
+          <svg class="payment-icon" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pi-american_express" viewBox="0 0 38 24" width="38" height="24"><title id="pi-american_express">American Express</title><path fill="#000" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3Z" opacity=".07"/><path fill="#006FCF" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32Z"/><path fill="#FFF" d="M22.012 19.936v-8.421L37 11.528v2.326l-1.732 1.852L37 17.573v2.375h-2.766l-1.47-1.622-1.46 1.628-9.292-.02Z"/><path fill="#006FCF" d="M23.013 19.012v-6.57h5.572v1.513h-3.768v1.028h3.678v1.488h-3.678v1.01h3.768v1.531h-5.572Z"/><path fill="#006FCF" d="m28.557 19.012 3.083-3.289-3.083-3.282h2.386l1.884 2.083 1.89-2.082H37v.051l-3.017 3.23L37 18.92v.093h-2.307l-1.917-2.103-1.898 2.104h-2.321Z"/><path fill="#FFF" d="M22.71 4.04h3.614l1.269 2.881V4.04h4.46l.77 2.159.771-2.159H37v8.421H19l3.71-8.421Z"/><path fill="#006FCF" d="m23.395 4.955-2.916 6.566h2l.55-1.315h2.98l.55 1.315h2.05l-2.904-6.566h-2.31Zm.25 3.777.875-2.09.873 2.09h-1.748Z"/><path fill="#006FCF" d="M28.581 11.52V4.953l2.811.01L32.84 9l1.456-4.046H37v6.565l-1.74.016v-4.51l-1.644 4.494h-1.59L30.35 7.01v4.51h-1.768Z"/></svg>
+          <svg class="payment-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" role="img" width="38" height="24" aria-labelledby="pi-diners_club"><title id="pi-diners_club">Diners Club</title><path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"></path><path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"></path><path d="M12 12v3.7c0 .3-.2.3-.5.2-1.9-.8-3-3.3-2.3-5.4.4-1.1 1.2-2 2.3-2.4.4-.2.5-.1.5.2V12zm2 0V8.3c0-.3 0-.3.3-.2 2.1.8 3.2 3.3 2.4 5.4-.4 1.1-1.2 2-2.3 2.4-.4.2-.4.1-.4-.2V12zm7.2-7H13c3.8 0 6.8 3.1 6.8 7s-3 7-6.8 7h8.2c3.8 0 6.8-3.1 6.8-7s-3-7-6.8-7z" fill="#3086C8"></path></svg>
+          <svg class="payment-icon" viewBox="0 0 38 24" width="38" height="24" role="img" aria-labelledby="pi-discover" fill="none" xmlns="http://www.w3.org/2000/svg"><title id="pi-discover">Discover</title><path fill="#000" opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"></path><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32z" fill="#fff"></path><path d="M3.57 7.16H2v5.5h1.57c.83 0 1.43-.2 1.96-.63.63-.52 1-1.3 1-2.11-.01-1.63-1.22-2.76-2.96-2.76zm1.26 4.14c-.34.3-.77.44-1.47.44h-.29V8.1h.29c.69 0 1.11.12 1.47.44.37.33.59.84.59 1.37 0 .53-.22 1.06-.59 1.39zm2.19-4.14h1.07v5.5H7.02v-5.5zm3.69 2.11c-.64-.24-.83-.4-.83-.69 0-.35.34-.61.8-.61.32 0 .59.13.86.45l.56-.73c-.46-.4-1.01-.61-1.62-.61-.97 0-1.72.68-1.72 1.58 0 .76.35 1.15 1.35 1.51.42.15.63.25.74.31.21.14.32.34.32.57 0 .45-.35.78-.83.78-.51 0-.92-.26-1.17-.73l-.69.67c.49.73 1.09 1.05 1.9 1.05 1.11 0 1.9-.74 1.9-1.81.02-.89-.35-1.29-1.57-1.74zm1.92.65c0 1.62 1.27 2.87 2.9 2.87.46 0 .86-.09 1.34-.32v-1.26c-.43.43-.81.6-1.29.6-1.08 0-1.85-.78-1.85-1.9 0-1.06.79-1.89 1.8-1.89.51 0 .9.18 1.34.62V7.38c-.47-.24-.86-.34-1.32-.34-1.61 0-2.92 1.28-2.92 2.88zm12.76.94l-1.47-3.7h-1.17l2.33 5.64h.58l2.37-5.64h-1.16l-1.48 3.7zm3.13 1.8h3.04v-.93h-1.97v-1.48h1.9v-.93h-1.9V8.1h1.97v-.94h-3.04v5.5zm7.29-3.87c0-1.03-.71-1.62-1.95-1.62h-1.59v5.5h1.07v-2.21h.14l1.48 2.21h1.32l-1.73-2.32c.81-.17 1.26-.72 1.26-1.56zm-2.16.91h-.31V8.03h.33c.67 0 1.03.28 1.03.82 0 .55-.36.85-1.05.85z" fill="#231F20"></path><path d="M20.16 12.86a2.931 2.931 0 100-5.862 2.931 2.931 0 000 5.862z" fill="url(#pi-paint0_linear)"></path><path opacity=".65" d="M20.16 12.86a2.931 2.931 0 100-5.862 2.931 2.931 0 000 5.862z" fill="url(#pi-paint1_linear)"></path><path d="M36.57 7.506c0-.1-.07-.15-.18-.15h-.16v.48h.12v-.19l.14.19h.14l-.16-.2c.06-.01.1-.06.1-.13zm-.2.07h-.02v-.13h.02c.06 0 .09.02.09.06 0 .05-.03.07-.09.07z" fill="#231F20"></path><path d="M36.41 7.176c-.23 0-.42.19-.42.42 0 .23.19.42.42.42.23 0 .42-.19.42-.42 0-.23-.19-.42-.42-.42zm0 .77c-.18 0-.34-.15-.34-.35 0-.19.15-.35.34-.35.18 0 .33.16.33.35 0 .19-.15.35-.33.35z" fill="#231F20"></path><path d="M37 12.984S27.09 19.873 8.976 23h26.023a2 2 0 002-1.984l.024-3.02L37 12.985z" fill="#F48120"></path><defs><linearGradient id="pi-paint0_linear" x1="21.657" y1="12.275" x2="19.632" y2="9.104" gradientUnits="userSpaceOnUse"><stop stop-color="#F89F20"></stop><stop offset=".25" stop-color="#F79A20"></stop><stop offset=".533" stop-color="#F68D20"></stop><stop offset=".62" stop-color="#F58720"></stop><stop offset=".723" stop-color="#F48120"></stop><stop offset="1" stop-color="#F37521"></stop></linearGradient><linearGradient id="pi-paint1_linear" x1="21.338" y1="12.232" x2="18.378" y2="6.446" gradientUnits="userSpaceOnUse"><stop stop-color="#F58720"></stop><stop offset=".359" stop-color="#E16F27"></stop><stop offset=".703" stop-color="#D4602C"></stop><stop offset=".982" stop-color="#D05B2E"></stop></linearGradient></defs></svg>
+          <svg class="payment-icon" role="img" aria-labelledby="pi-elo" width="38" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 24"><title id="pi-elo">Elo</title><g fill-rule="nonzero" fill="none"><path d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z" fill="#000" opacity=".07"></path><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32" fill="#FFF"></path><g><path fill="#003933" d="M 2.6796 11.08653 h 2.40758 c 0.43036 -2.27695 2.42382 -4.10657 4.96538 -4.10657 s 4.91666 2.04321 4.91666 5.12616 q 0.01218 0.38688 -0.06496 0.82615 h -7.77490 c 0.36540 1.40244 1.52656 2.22456 2.92320 2.22456 s 2.09090 -0.46345 2.80546 -1.26945 l 1.42912 1.30169 c -0.94598 1.07198 -2.35886 1.81350 -4.23458 1.81350 s -4.53502 -1.79738 -4.96538 -4.07433 h -2.40758 v -1.84574 Z M 12.9108 11.08653 c -0.10150 -0.57629 -0.36540 -1.10422 -0.74704 -1.48304 c -0.49938 -0.49569 -1.23018 -0.81003 -2.11120 -0.81003 s -1.59558 0.29822 -2.12754 0.82615 c -0.36540 0.36270 -0.66584 0.85839 -0.81606 1.46692 h 5.80184 Z M 16.41864 7.05047 h 2.09090 v 7.91492 h 3.78398 v 1.97873 h -3.75152 c -1.38040 0 -2.12736 -0.74152 -2.12736 -2.11176 v -7.78189 h 0 Z M 22.6954 11.98828 c 0 -2.68801 2.20864 -5.01372 5.13184 -5.01372 s 4.61622 1.81350 5.05066 4.10657 h 2.40758 v 1.84574 h -2.40758 c -0.44660 2.27695 -2.47466 4.07433 -5.05066 4.07433 c -2.93944 0 -5.13184 -2.30919 -5.13184 -5.01292 Z M 27.82724 15.05551 c 1.74580 0 3.04094 -1.31781 3.04094 -3.05111 s -1.32756 -3.08335 -3.04094 -3.08335 s -3.04094 1.31781 -3.04094 3.06723 c 0 1.69683 1.32756 3.06723 3.04094 3.06723 Z"></path></g></g></svg>
+          <svg class="payment-icon" role="img" aria-labelledby="pi-hypercard" viewBox="0 0 38 24" width="38" height="24" xmlns="http://www.w3.org/2000/svg"><title id="pi-hypercard">Hypercard</title><g fill="none" fill-rule="evenodd"><path d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z" fill="#000" fill-rule="nonzero" opacity=".07"></path><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32" fill="#FFF" fill-rule="nonzero"></path><path d="M11.9 5.1H8.6c-1.4.1-2.6.6-2.9 1.8-.2.6-.3 1.3-.4 2-.7 3.3-1.3 6.7-2 9.9h25.4c2 0 3.3-.4 3.7-2 .2-.7.3-1.5.5-2.3.6-3.1 1.3-6.2 1.9-9.4H11.9z" fill="#B3131B" fill-rule="nonzero"></path><path d="M6.38 9.31h.605v1.827h2.3V9.31h.605v4.421h-.605v-2.067h-2.3v2.067h-.604v-4.42zm4.364 1.213h.551v3.208h-.55v-3.208zm0-1.213h.551v.614h-.55V9.31zm3.36 3.74c.168-.212.252-.528.252-.95 0-.257-.037-.477-.111-.662-.14-.355-.398-.533-.77-.533-.376 0-.633.188-.771.563a2.23 2.23 0 00-.112.765c0 .248.037.46.112.635.14.333.397.5.77.5a.773.773 0 00.63-.318zm-2.032-2.527h.526v.428c.109-.147.227-.26.355-.34.183-.12.398-.181.644-.181.366 0 .676.14.93.42.255.28.383.68.383 1.2 0 .701-.184 1.203-.551 1.504a1.25 1.25 0 01-.813.286c-.242 0-.446-.053-.61-.16a1.408 1.408 0 01-.323-.31v1.646h-.541v-4.493zm5.477.074c.215.107.378.246.49.417.109.162.181.352.217.569.032.148.048.385.048.71h-2.362c.01.327.087.59.232.787.144.197.368.296.67.296.284 0 .51-.093.678-.28a.944.944 0 00.205-.376h.532c-.014.119-.06.25-.14.396a1.432 1.432 0 01-.266.357c-.165.16-.368.268-.61.325a1.873 1.873 0 01-.443.048c-.402 0-.742-.146-1.02-.438-.28-.292-.419-.7-.419-1.227 0-.517.14-.938.421-1.26.281-.324.648-.485 1.102-.485.229 0 .45.054.665.16zm.199 1.265a1.403 1.403 0 00-.154-.562c-.148-.261-.396-.392-.743-.392a.824.824 0 00-.626.27c-.169.18-.258.408-.268.684h1.79zm1.237-1.354h.514v.557c.042-.108.146-.24.31-.396a.804.804 0 01.62-.23l.124.012v.572a.81.81 0 00-.178-.015c-.273 0-.482.088-.629.263a.92.92 0 00-.22.607v1.853h-.541v-3.223zm4.166.172c.228.176.365.48.411.912h-.526a.972.972 0 00-.22-.495c-.115-.132-.298-.198-.55-.198-.346 0-.593.169-.741.506-.097.219-.145.489-.145.81 0 .323.068.594.205.815.136.22.351.331.644.331.225 0 .403-.068.534-.206.132-.137.222-.325.273-.564h.526c-.06.427-.21.74-.451.937-.241.198-.549.297-.924.297-.422 0-.758-.154-1.008-.462-.251-.308-.377-.693-.377-1.154 0-.566.138-1.007.413-1.322a1.332 1.332 0 011.05-.472c.363 0 .659.088.886.265zm1.54 2.564c.114.09.25.135.406.135.19 0 .375-.044.554-.132a.745.745 0 00.451-.72v-.436a.927.927 0 01-.256.106 2.18 2.18 0 01-.307.06l-.328.042a1.255 1.255 0 00-.442.123c-.167.095-.25.245-.25.452 0 .156.057.28.172.37zm1.14-1.466c.125-.016.208-.068.25-.156a.476.476 0 00.036-.208c0-.185-.065-.318-.197-.402-.131-.083-.32-.125-.564-.125-.283 0-.484.077-.602.23a.752.752 0 00-.13.375h-.505c.01-.397.139-.673.387-.829a1.59 1.59 0 01.862-.233c.38 0 .687.072.924.217.235.144.352.369.352.674v1.857c0 .056.012.101.035.135.023.034.071.051.146.051a.824.824 0 00.177-.018v.4c-.084.025-.148.04-.192.046a1.408 1.408 0 01-.181.009c-.187 0-.322-.067-.406-.199a.767.767 0 01-.094-.298c-.11.145-.269.27-.475.376a1.47 1.47 0 01-.683.16c-.3 0-.544-.091-.733-.273a.905.905 0 01-.285-.681c0-.3.094-.531.28-.695.187-.165.432-.266.735-.304l.863-.109zm1.716-1.27h.514v.557c.043-.108.146-.24.31-.396a.804.804 0 01.62-.23l.124.012v.572a.81.81 0 00-.178-.015c-.273 0-.482.088-.629.263a.92.92 0 00-.22.607v1.853h-.541v-3.223zm2.6 2.516c.147.233.381.35.704.35a.745.745 0 00.619-.324c.161-.216.242-.525.242-.929 0-.407-.083-.708-.25-.904a.78.78 0 00-.617-.294.814.814 0 00-.663.313c-.17.21-.255.516-.255.921 0 .345.074.634.22.867zm1.216-2.417c.096.06.206.166.328.316V9.295h.52v4.436h-.487v-.448a1.172 1.172 0 01-.448.43c-.173.089-.37.133-.593.133-.36 0-.67-.151-.933-.453-.263-.302-.394-.704-.394-1.206 0-.469.12-.876.36-1.22.239-.344.582-.516 1.027-.516.247 0 .453.052.62.156z" fill="#FFF"></path></g></svg>
+          <svg class="payment-icon" width="38" height="24" role="img" aria-labelledby="pi-jcb" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg"><title id="pi-jcb">JCB</title><g fill="none" fill-rule="evenodd"><g fill-rule="nonzero"><path d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z" fill="#000" opacity=".07"></path><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32" fill="#FFF"></path></g><path d="M11.5 5H15v11.5a2.5 2.5 0 0 1-2.5 2.5H9V7.5A2.5 2.5 0 0 1 11.5 5z" fill="#006EBC"></path><path d="M18.5 5H22v11.5a2.5 2.5 0 0 1-2.5 2.5H16V7.5A2.5 2.5 0 0 1 18.5 5z" fill="#F00036"></path><path d="M25.5 5H29v11.5a2.5 2.5 0 0 1-2.5 2.5H23V7.5A2.5 2.5 0 0 1 25.5 5z" fill="#2AB419"></path><path d="M10.755 14.5c-1.06 0-2.122-.304-2.656-.987l.78-.676c.068 1.133 3.545 1.24 3.545-.19V9.5h1.802v3.147c0 .728-.574 1.322-1.573 1.632-.466.144-1.365.221-1.898.221zm8.116 0c-.674 0-1.388-.107-1.965-.366-.948-.425-1.312-1.206-1.3-2.199.012-1.014.436-1.782 1.468-2.165 1.319-.49 3.343-.261 3.926.27v.972c-.572-.521-1.958-.898-2.919-.46-.494.226-.737.917-.744 1.448-.006.56.245 1.252.744 1.497.953.467 2.39.04 2.919-.441v1.01c-.358.255-1.253.434-2.129.434zm8.679-2.587c.37-.235.582-.567.582-1.005 0-.438-.116-.687-.348-.939-.206-.207-.58-.469-1.238-.469H23v5h3.546c.696 0 1.097-.23 1.315-.415.283-.25.426-.53.426-.96 0-.431-.155-.908-.737-1.212zm-1.906-.281h-1.428v-1.444h1.495c.956 0 .944 1.444-.067 1.444zm.288 2.157h-1.716v-1.513h1.716c.986 0 1.083 1.513 0 1.513z" fill="#FFF" fill-rule="nonzero"></path></g></svg>
+          <svg class="payment-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" role="img" width="38" height="24" aria-labelledby="pi-master"><title id="pi-master">Mastercard</title><path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"></path><path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"></path><circle fill="#EB001B" cx="15" cy="12" r="7"></circle><circle fill="#F79E1B" cx="23" cy="12" r="7"></circle><path fill="#FF5F00" d="M22 12c0-2.4-1.2-4.5-3-5.7-1.8 1.3-3 3.4-3 5.7s1.2 4.5 3 5.7c1.8-1.2 3-3.3 3-5.7z"></path></svg>
+          <svg class="payment-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" role="img" width="38" height="24" aria-labelledby="pi-visa"><title id="pi-visa">Visa</title><path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"></path><path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"></path><path d="M28.3 10.1H28c-.4 1-.7 1.5-1 3h1.9c-.3-1.5-.3-2.2-.6-3zm2.9 5.9h-1.7c-.1 0-.1 0-.2-.1l-.2-.9-.1-.2h-2.4c-.1 0-.2 0-.2.2l-.3.9c0 .1-.1.1-.1.1h-2.1l.2-.5L27 8.7c0-.5.3-.7.8-.7h1.5c.1 0 .2 0 .2.2l1.4 6.5c.1.4.2.7.2 1.1.1.1.1.1.1.2zm-13.4-.3l.4-1.8c.1 0 .2.1.2.1.7.3 1.4.5 2.1.4.2 0 .5-.1.7-.2.5-.2.5-.7.1-1.1-.2-.2-.5-.3-.8-.5-.4-.2-.8-.4-1.1-.7-1.2-1-.8-2.4-.1-3.1.6-.4.9-.8 1.7-.8 1.2 0 2.5 0 3.1.2h.1c-.1.6-.2 1.1-.4 1.7-.5-.2-1-.4-1.5-.4-.3 0-.6 0-.9.1-.2 0-.3.1-.4.2-.2.2-.2.5 0 .7l.5.4c.4.2.8.4 1.1.6.5.3 1 .8 1.1 1.4.2.9-.1 1.7-.9 2.3-.5.4-.7.6-1.4.6-1.4 0-2.5.1-3.4-.2-.1.2-.1.2-.2.1zm-3.5.3c.1-.7.1-.7.2-1 .5-2.2 1-4.5 1.4-6.7.1-.2.1-.3.3-.3H18c-.2 1.2-.4 2.1-.7 3.2-.3 1.5-.6 3-1 4.5 0 .2-.1.2-.3.2M5 8.2c0-.1.2-.2.3-.2h3.4c.5 0 .9.3 1 .8l.9 4.4c0 .1 0 .1.1.2 0-.1.1-.1.1-.1l2.1-5.1c-.1-.1 0-.2.1-.2h2.1c0 .1 0 .1-.1.2l-3.1 7.3c-.1.2-.1.3-.2.4-.1.1-.3 0-.5 0H9.7c-.1 0-.2 0-.2-.2L7.9 9.5c-.2-.2-.5-.5-.9-.6-.6-.3-1.7-.5-1.9-.5L5 8.2z" fill="#142688"></path></svg>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Proteção contra duplo submit
+    let enviando = false;
+
+    // Validações no cliente (espelham o servidor — defesa em profundidade)
+    const EMAIL_REGEX    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const WHATSAPP_REGEX = /^[\d\s\-()+]{7,20}$/;
+
+    function sanitizarInput(valor, maxLen) {
+      return String(valor || '').trim().slice(0, maxLen);
+    }
+
+    // Ajusta o campo de conselho conforme a profissão selecionada
+    function atualizarConselho() {
+      const prof   = document.getElementById('profissao').value;
+      const label  = document.getElementById('conselho-label');
+      const input  = document.getElementById('conselho');
+
+      if (prof === 'Médico(a)') {
+        label.textContent  = 'Número do CRM *';
+        input.placeholder  = '123456/SP';
+        input.disabled     = false;
+      } else if (prof === 'Nutricionista') {
+        label.textContent  = 'Número do CRN *';
+        input.placeholder  = 'CRN-3 12345';
+        input.disabled     = false;
+      } else {
+        label.textContent  = 'Nº do conselho *';
+        input.placeholder  = 'Selecione sua profissão primeiro';
+        input.value        = '';
+        input.disabled     = true;
+      }
+    }
+
+    async function enviarFormulario() {
+      if (enviando) return;
+
+      const btn    = document.getElementById('btn-submit');
+      const erro   = document.getElementById('form-error');
+
+      const nome          = sanitizarInput(document.getElementById('nome').value, 120);
+      const email         = sanitizarInput(document.getElementById('email').value, 254).toLowerCase();
+      const emailConfirma = sanitizarInput(document.getElementById('email-confirma').value, 254).toLowerCase();
+      const whatsapp      = sanitizarInput(document.getElementById('whatsapp').value, 30);
+      const profissao = sanitizarInput(document.getElementById('profissao').value, 60);
+      const conselho  = sanitizarInput(document.getElementById('conselho').value, 60);
+
+      erro.style.display = 'none';
+
+      // Validação local com destaque no campo específico
+      ['nome','email','email-confirma','whatsapp','profissao','conselho'].forEach(id =>
+        document.getElementById(id).classList.remove('input-error'));
+
+      const erros = [];
+      const marcar = (id, msg) => {
+        document.getElementById(id).classList.add('input-error');
+        erros.push({ id, msg });
+      };
+
+      if (nome.length < 3) marcar('nome', 'Por favor, informe seu nome completo.');
+      if (!EMAIL_REGEX.test(email)) marcar('email', 'Por favor, informe um e-mail válido.');
+      else if (email !== emailConfirma) marcar('email-confirma', 'Os e-mails não coincidem.');
+      if (!whatsapp || !WHATSAPP_REGEX.test(whatsapp)) marcar('whatsapp', 'Por favor, informe um WhatsApp válido.');
+      if (!profissao) marcar('profissao', 'Por favor, selecione sua profissão.');
+      if (!conselho || conselho.length < 4) marcar('conselho', 'Por favor, informe o número do seu conselho (CRM ou CRN).');
+
+      if (erros.length) {
+        erro.textContent = erros[0].msg;
+        erro.style.display = 'block';
+        const primeiro = document.getElementById(erros[0].id);
+        if (!primeiro.disabled) primeiro.focus();
+        return;
+      }
+
+      enviando = true;
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+
+      try {
+        const res = await fetch('/api/cadastro', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email, whatsapp, profissao, conselho })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Erro no servidor');
+        }
+
+        // Marca como cadastrado neste navegador e leva à página de confirmação
+        try {
+          localStorage.setItem('uvits_prescritor_cadastrado',
+            JSON.stringify({ nome, email, data: new Date().toISOString() }));
+        } catch (_) {}
+        window.location.href = 'obrigado.html';
+        return;
+
+      } catch (e) {
+        erro.textContent = e.message || 'Ocorreu um erro. Por favor, tente novamente.';
+        erro.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Quero me cadastrar →';
+        enviando = false;
+      }
+    }
+
+    // Máscara de WhatsApp: (11) 99999-9999
+    function mascaraWhatsapp(v) {
+      v = String(v).replace(/\D/g, '').slice(0, 11);
+      if (v.length <= 2)  return v ? '(' + v : v;
+      if (v.length <= 6)  return '(' + v.slice(0, 2) + ') ' + v.slice(2);
+      if (v.length <= 10) return '(' + v.slice(0, 2) + ') ' + v.slice(2, 6) + '-' + v.slice(6);
+      return '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
+    }
+
+    // Máscara do conselho conforme a profissão.
+    // CRM: NNNNNN/UF (até 6 dígitos + sigla do estado).
+    // CRN: leniente (mantém CRN-3 12345), só normaliza caracteres e maiúsculas.
+    function mascaraConselho(v, tipo) {
+      v = String(v).toUpperCase();
+      if (tipo === 'CRM') {
+        let nums = '', uf = '';
+        for (const ch of v) {
+          if (ch >= '0' && ch <= '9') { if (uf.length === 0 && nums.length < 6) nums += ch; }
+          else if (ch >= 'A' && ch <= 'Z') { if (nums.length > 0 && uf.length < 2) uf += ch; }
+        }
+        return uf ? nums + '/' + uf : nums;
+      }
+      // CRN: mantém dígitos, letras, '-', '/' e espaço; limita o tamanho
+      return v.replace(/[^0-9A-Z/\- ]/g, '').replace(/\s+/g, ' ').slice(0, 15);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Formata o WhatsApp enquanto digita
+      const wpp = document.getElementById('whatsapp');
+      if (wpp) wpp.addEventListener('input', e => { e.target.value = mascaraWhatsapp(e.target.value); });
+
+      // Formata o conselho (CRM/CRN) conforme a profissão selecionada
+      const cons = document.getElementById('conselho');
+      if (cons) cons.addEventListener('input', e => {
+        const prof = document.getElementById('profissao').value;
+        const tipo = prof === 'Médico(a)' ? 'CRM' : (prof === 'Nutricionista' ? 'CRN' : null);
+        if (tipo) e.target.value = mascaraConselho(e.target.value, tipo);
+      });
+
+      // Se já há cadastro neste navegador, esconde o formulário e mostra o aviso
+      let jaCadastrado = false;
+      try { jaCadastrado = !!localStorage.getItem('uvits_prescritor_cadastrado'); } catch (_) {}
+      if (jaCadastrado) {
+        const campos = document.getElementById('form-fields');
+        const aviso  = document.getElementById('form-already');
+        if (campos) campos.style.display = 'none';
+        if (aviso)  aviso.style.display = 'block';
+      }
+
+      iniciarCarrosselTrust();
+    });
+
+    // Carrossel da trust bar — só no mobile. Auto-avança, permite controle
+    // manual (swipe/dots) e volta ao automático após 6s sem interação.
+    function iniciarCarrosselTrust() {
+      const track = document.querySelector('.trustbar .container');
+      const dotsWrap = document.getElementById('trust-dots');
+      if (!track || !dotsWrap) return;
+      const itens = track.querySelectorAll('.trust-item');
+      const total = itens.length;
+      if (!total) return;
+
+      const mq = window.matchMedia('(max-width: 560px)');
+      let idx = 0, timer = null, resumeTimer = null;
+      const INTERVALO = 3000, RETOMAR_APOS = 6000;
+
+      dotsWrap.innerHTML = Array.from({ length: total })
+        .map((_, i) => `<span data-i="${i}"></span>`).join('');
+      const dots = dotsWrap.querySelectorAll('span');
+
+      function mostrar(i) {
+        idx = (i + total) % total;
+        track.style.transform = `translateX(-${idx * 100}%)`;
+        dots.forEach((d, di) => d.classList.toggle('active', di === idx));
+      }
+      function auto()  { parar(); if (mq.matches) timer = setInterval(() => mostrar(idx + 1), INTERVALO); }
+      function parar() { if (timer) { clearInterval(timer); timer = null; } }
+      function interagiu() { parar(); clearTimeout(resumeTimer); resumeTimer = setTimeout(auto, RETOMAR_APOS); }
+      function irPara(i) { mostrar(i); interagiu(); }
+
+      dots.forEach(d => d.addEventListener('click', () => irPara(parseInt(d.dataset.i))));
+
+      let x0 = null, dragging = false;
+      track.addEventListener('pointerdown', e => {
+        if (!mq.matches) return;
+        x0 = e.clientX; dragging = true;
+        track.style.transition = 'none';
+        if (track.setPointerCapture) track.setPointerCapture(e.pointerId);
+        parar();
+      });
+      track.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        track.style.transform = `translateX(calc(-${idx * 100}% + ${e.clientX - x0}px))`;
+      });
+      function fimDrag(e) {
+        if (!dragging) return;
+        dragging = false;
+        track.style.transition = '';
+        const dx = e.clientX - x0;
+        if (Math.abs(dx) > 40) mostrar(idx + (dx < 0 ? 1 : -1));
+        else mostrar(idx);
+        interagiu();
+      }
+      track.addEventListener('pointerup', fimDrag);
+      track.addEventListener('pointercancel', fimDrag);
+
+      function configurar() {
+        clearTimeout(resumeTimer);
+        if (mq.matches) { mostrar(0); auto(); }
+        else { parar(); track.style.transform = ''; dots.forEach(d => d.classList.remove('active')); }
+      }
+      mq.addEventListener ? mq.addEventListener('change', configurar) : mq.addListener(configurar);
+      configurar();
+    }
+  </script>
+
+</body>
+</html>

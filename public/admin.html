@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel — Uvits Pro Prescritor</title>
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #2EC4A5;
+      --dark:    #1C2620;
+      --cream:   #F5F1EC;
+      --border:  #E8E3DD;
+      --text:    #5a6b5e;
+      --danger:  #e05c5c;
+      --success: #2EC4A5;
+
+      --status-aguardando: #f59e0b;
+      --status-contato:    #3b82f6;
+      --status-aprovado:   #10b981;
+      --status-reprovado:  #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f0ec;
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .login-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%; max-width: 380px;
+    }
+    .login-logo {
+      font-size: 10px; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .login-title { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 28px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px; letter-spacing: .3px; }
+    .field input {
+      width: 100%; padding: 10px 13px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 14px; outline: none; transition: border-color .2s;
+    }
+    .field input:focus { border-color: var(--primary); }
+    .btn-login {
+      width: 100%; background: var(--dark); color: #fff;
+      font-size: 14px; font-weight: 700;
+      padding: 13px; border: none; border-radius: 8px;
+      cursor: pointer; margin-top: 6px; transition: opacity .2s;
+    }
+    .btn-login:hover    { opacity: .85; }
+    .btn-login:disabled { opacity: .6; cursor: not-allowed; }
+    .login-error {
+      background: #fff0f0; border: 1px solid #fcc;
+      border-radius: 8px; padding: 10px 13px;
+      font-size: 12px; color: var(--danger);
+      margin-top: 12px; display: none;
+    }
+
+    /* ── LAYOUT PAINEL ── */
+    .painel { display: none; min-height: 100vh; flex-direction: column; }
+
+    /* Navbar */
+    .navbar {
+      background: var(--dark);
+      padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; flex-shrink: 0;
+    }
+    .navbar__brand {
+      font-size: 10px; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--primary);
+    }
+    .navbar__user { font-size: 12px; color: rgba(255,255,255,.5); display: flex; align-items: center; gap: 12px; }
+    .navbar__user strong { color: #fff; }
+    .btn-logout {
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,.5);
+      background: none; border: 1px solid rgba(255,255,255,.15);
+      border-radius: 6px; padding: 5px 10px; cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-logout:hover { color: #fff; border-color: rgba(255,255,255,.4); }
+
+    /* Conteúdo */
+    .main { flex: 1; padding: 28px 24px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+    /* Badges de status */
+    .badges { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .badge {
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      border: 2px solid transparent; transition: all .15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .badge.active { border-color: currentColor; }
+    .badge--todos       { background: #f0f0ec; color: var(--dark); }
+    .badge--aguardando  { background: #fef3c7; color: #92400e; }
+    .badge--contato     { background: #dbeafe; color: #1e40af; }
+    .badge--aprovado    { background: #d1fae5; color: #065f46; }
+    .badge--reprovado   { background: #fee2e2; color: #991b1b; }
+    .badge__count {
+      background: rgba(0,0,0,.1);
+      border-radius: 20px; padding: 1px 7px;
+      font-size: 11px;
+    }
+
+    /* Barra de busca e filtros */
+    .toolbar {
+      display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1; min-width: 200px;
+      padding: 9px 13px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px; outline: none;
+      transition: border-color .2s;
+    }
+    .search-input:focus { border-color: var(--primary); }
+
+    /* Tabela */
+    .table-wrap {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--cream); }
+    th {
+      padding: 11px 14px; text-align: left;
+      font-size: 10px; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; color: var(--text);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafaf8; }
+    td { padding: 13px 14px; font-size: 13px; vertical-align: middle; }
+
+    /* Pill de status */
+    .pill {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 20px; font-size: 11px; font-weight: 700;
+      white-space: nowrap;
+    }
+    .pill--aguardando_contato { background: #fef3c7; color: #92400e; }
+    .pill--contato_realizado  { background: #dbeafe; color: #1e40af; }
+    .pill--aprovado           { background: #d1fae5; color: #065f46; }
+    .pill--reprovado          { background: #fee2e2; color: #991b1b; }
+
+    /* Email enviado */
+    .email-ok  { color: var(--success); font-size: 15px; }
+    .email-nok { color: #ccc; font-size: 15px; }
+
+    /* Botão de ação */
+    .btn-ver {
+      font-size: 12px; font-weight: 600;
+      color: var(--primary); background: none; border: none;
+      cursor: pointer; padding: 4px 0; text-decoration: underline;
+    }
+
+    /* Paginação */
+    .pagination {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 20px 0;
+    }
+    .btn-page {
+      padding: 6px 12px; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 12px; font-weight: 600;
+      cursor: pointer; background: #fff; transition: all .15s;
+    }
+    .btn-page:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .btn-page:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-page.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+    .pagination-info { font-size: 12px; color: var(--text); }
+
+    /* Loading e empty */
+    .state-msg {
+      text-align: center; padding: 48px 24px;
+      font-size: 13px; color: var(--text);
+    }
+    .state-msg strong { display: block; font-size: 15px; color: var(--dark); margin-bottom: 6px; }
+
+    /* ── MÉTRICAS (resumo no topo) ── */
+    .metrics {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-bottom: 24px;
+    }
+    .metric {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 18px;
+      position: relative; overflow: hidden;
+    }
+    .metric::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+      background: var(--accent, var(--primary));
+    }
+    .metric__num { font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1; color: var(--dark); }
+    .metric__label { font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text); margin-top: 6px; }
+    .metric--total      { --accent: var(--dark); }
+    .metric--aguardando { --accent: var(--status-aguardando); }
+    .metric--aprovado   { --accent: var(--status-aprovado); }
+    .metric--reprovado  { --accent: var(--status-reprovado); }
+
+    /* ── SKELETON (carregando) ── */
+    .skeleton {
+      display: inline-block; height: 12px; border-radius: 6px;
+      background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
+      background-size: 400% 100%; animation: shimmer 1.3s ease infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+    /* Sombra sutil nos cartões principais */
+    .table-wrap, .metric { box-shadow: 0 1px 2px rgba(28,38,32,.04); }
+    .login-card, .modal { box-shadow: 0 12px 40px rgba(28,38,32,.12); }
+
+    /* Data-label para o modo card no mobile (oculto no desktop) */
+    td[data-label]::before { content: none; }
+
+    /* ── LOGO / AVATAR / CONTA ── */
+    .login-brand {
+      background: var(--dark); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px; margin-bottom: 22px;
+    }
+    .login-brand img { height: 30px; width: auto; }
+    .navbar__left { display: flex; align-items: center; gap: 12px; }
+    .navbar__logo { height: 26px; width: auto; display: block; }
+    .navbar__account {
+      display: flex; align-items: center; gap: 9px;
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.7); font-size: 12px; font-family: inherit;
+      padding: 4px 8px; border-radius: 8px; transition: background .15s;
+    }
+    .navbar__account:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .navbar__account strong { color: #fff; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; overflow: hidden; flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* View de configuração da conta */
+    #config-view { display: none; }
+    .main.showing-config > :not(#config-view) { display: none; }
+    .main.showing-config #config-view { display: block; }
+    .config-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .config-title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+    .btn-back {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 14px; cursor: pointer; transition: all .15s;
+    }
+    .btn-back:hover { border-color: var(--primary); color: var(--primary); }
+    .settings-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px;
+      padding: 24px; margin-bottom: 18px; max-width: 640px;
+      box-shadow: 0 1px 2px rgba(28,38,32,.04);
+    }
+    .settings-card h3 { font-size: 14px; font-weight: 800; display: flex; align-items: center; }
+    .settings-card .sub { font-size: 12px; color: var(--text); margin: 4px 0 18px; line-height: 1.6; }
+    .avatar-edit { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+    .avatar-lg { width: 76px; height: 76px; border-radius: 50%; font-size: 26px; }
+    .field-ro { font-size: 13px; color: var(--dark); padding: 10px 13px; background: var(--cream); border-radius: 8px; }
+    .soon {
+      font-size: 9.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+      color: #92400e; background: #fef3c7; padding: 3px 8px; border-radius: 20px; margin-left: 8px;
+    }
+    .btn-outline {
+      font-size: 13px; font-weight: 700; color: var(--dark);
+      background: #fff; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 16px; cursor: pointer; transition: all .15s;
+    }
+    .btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .btn-outline:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Zona de exclusão (delete) */
+    .btn-danger {
+      background: var(--danger); color: #fff; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 700; padding: 11px 16px; cursor: pointer; transition: opacity .2s;
+    }
+    .btn-danger:hover:not(:disabled) { opacity: .88; }
+    .btn-danger:disabled { opacity: .45; cursor: not-allowed; }
+    .danger-zone { border: 1px solid #f3c9c9; background: #fff7f7; border-radius: 10px; padding: 16px; }
+    .danger-zone__title { font-size: 12px; font-weight: 800; color: var(--danger); margin-bottom: 4px; }
+    .danger-text { font-size: 12px; color: var(--text); margin-bottom: 10px; line-height: 1.5; }
+    .confirm-input {
+      width: 100%; padding: 10px 13px; border: 1px solid #e6b8b8; border-radius: 8px;
+      font-size: 13px; outline: none; margin-bottom: 10px;
+    }
+    .confirm-input:focus { border-color: var(--danger); }
+
+    /* ── MODAL DETALHES ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      display: none; align-items: center; justify-content: center;
+      z-index: 100; padding: 24px;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px;
+      width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      padding: 32px;
+      scrollbar-width: thin;                 /* Firefox */
+      scrollbar-color: var(--primary) var(--cream);
+    }
+    /* Scrollbar com a identidade do site (Chrome/Edge/Safari) */
+    .modal::-webkit-scrollbar { width: 10px; }
+    .modal::-webkit-scrollbar-track { background: var(--cream); border-radius: 0 16px 16px 0; }
+    .modal::-webkit-scrollbar-thumb {
+      background: var(--primary); border-radius: 8px;
+      border: 2px solid var(--cream);
+    }
+    .modal::-webkit-scrollbar-thumb:hover { background: #25a98e; }
+    .modal__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+    .modal__title  { font-size: 18px; font-weight: 900; letter-spacing: -0.4px; }
+    .modal__close  {
+      background: none; border: none; cursor: pointer;
+      font-size: 20px; color: var(--text); line-height: 1;
+      padding: 0 4px;
+    }
+    .modal-field { margin-bottom: 16px; }
+    .modal-field__label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--text); margin-bottom: 4px;
+    }
+    .modal-field__value { font-size: 14px; color: var(--dark); }
+    .modal-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    .modal-label { font-size: 11px; font-weight: 700; margin-bottom: 5px; display: block; }
+    .modal-select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; outline: none; margin-bottom: 12px;
+      transition: border-color .2s;
+    }
+    .modal-select:focus { border-color: var(--primary); }
+    .modal-textarea {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 13px; resize: vertical; min-height: 90px;
+      outline: none; font-family: inherit; transition: border-color .2s;
+    }
+    .modal-textarea:focus { border-color: var(--primary); }
+    .btn-salvar {
+      width: 100%; background: var(--dark); color: #fff;
+      font-size: 13px; font-weight: 700;
+      padding: 12px; border: none; border-radius: 8px;
+      cursor: pointer; transition: opacity .2s; margin-top: 4px;
+    }
+    .btn-salvar:hover    { opacity: .85; }
+    .btn-salvar:disabled { opacity: .6; cursor: not-allowed; }
+    .modal-feedback {
+      font-size: 12px; text-align: center;
+      margin-top: 10px; display: none;
+    }
+    .modal-feedback.ok  { color: var(--success); display: block; }
+    .modal-feedback.err { color: var(--danger);  display: block; }
+
+    @media (max-width: 860px) {
+      .metrics { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .main { padding: 16px; }
+
+      /* Tabela vira cartões: cada linha é um cartão legível */
+      .table-wrap { border: none; background: transparent; border-radius: 0; overflow: visible; }
+      table, tbody, tr, td { display: block; width: 100%; }
+      thead { display: none; }
+      tbody tr {
+        background: #fff; border: 1px solid var(--border); border-radius: 12px;
+        padding: 12px 16px; margin-bottom: 12px;
+        box-shadow: 0 1px 2px rgba(28,38,32,.04);
+      }
+      tbody tr:hover { background: #fff; }
+      td {
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        padding: 7px 0 !important; border: none; text-align: right;
+        font-size: 13px !important; white-space: normal !important;
+      }
+      td::before {
+        content: attr(data-label); text-align: left;
+        font-size: 10px; font-weight: 700; letter-spacing: .5px;
+        text-transform: uppercase; color: var(--text); flex-shrink: 0;
+      }
+      /* Primeira célula (#id) e a de ação ganham destaque/full-width */
+      td[data-label="#"] { color: var(--text); font-size: 12px !important; padding-top: 0 !important; }
+      td[data-label=""] { justify-content: stretch; padding-top: 12px !important; margin-top: 4px; border-top: 1px solid var(--border); }
+      td[data-label=""]::before { content: none; }
+      td[data-label=""] .btn-ver { width: 100%; text-align: center; padding: 10px; background: var(--cream); border-radius: 8px; text-decoration: none; }
+    }
+
+    @media (max-width: 480px) {
+      .metrics { grid-template-columns: 1fr 1fr; }
+      .badges { gap: 6px; }
+      .badge { padding: 7px 10px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TELA DE LOGIN ── -->
+<div class="login-wrap" id="tela-login">
+  <div class="login-card">
+    <div class="login-brand">
+      <img src="https://www.uvits.com.br/cdn/shop/files/logobrancouvits_21c7b47f-256a-451f-93c6-8e9c03d35028.svg?width=300" alt="Uvits Pro Prescritor" onerror="this.parentElement.outerHTML='&lt;p class=&quot;login-logo&quot;&gt;Uvits Pro Prescritor&lt;/p&gt;'">
+    </div>
+    <h1 class="login-title">Acesso ao painel</h1>
+    <div class="field">
+      <label for="l-email">E-mail</label>
+      <input type="email" id="l-email" placeholder="seu@email.com" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="l-senha">Senha</label>
+      <input type="password" id="l-senha" placeholder="••••••••" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') fazerLogin()">
+    </div>
+    <button class="btn-login" id="btn-login" onclick="fazerLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ── PAINEL ── -->
+<div class="painel" id="painel">
+  <nav class="navbar">
+    <div class="navbar__left">
+      <img class="navbar__logo" src="https://www.uvits.com.br/cdn/shop/files/logobrancouvits_21c7b47f-256a-451f-93c6-8e9c03d35028.svg?width=300" alt="Uvits Pro Prescritor" onerror="this.outerHTML='&lt;span class=&quot;navbar__brand&quot;&gt;Uvits Pro Prescritor&lt;/span&gt;'">
+    </div>
+    <div class="navbar__user">
+      <button class="navbar__account" onclick="abrirConfig()" title="Configurar conta">
+        <span class="avatar" id="nav-avatar">—</span>
+        <span>Olá, <strong id="nav-nome">—</strong></span>
+      </button>
+      <button class="btn-logout" onclick="sair()">Sair</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <!-- Métricas (resumo) -->
+    <div class="metrics" id="metrics">
+      <div class="metric metric--total"><div class="metric__num" id="m-total">—</div><div class="metric__label">Total de cadastros</div></div>
+      <div class="metric metric--aguardando"><div class="metric__num" id="m-aguardando">—</div><div class="metric__label">Aguardando contato</div></div>
+      <div class="metric metric--aprovado"><div class="metric__num" id="m-aprovado">—</div><div class="metric__label">Aprovados</div></div>
+      <div class="metric metric--reprovado"><div class="metric__num" id="m-reprovado">—</div><div class="metric__label">Reprovados</div></div>
+    </div>
+
+    <!-- Badges de status -->
+    <div class="badges" id="badges">
+      <div class="badge badge--todos active" data-status="todos" onclick="filtrarStatus('todos', this)">
+        Todos <span class="badge__count" id="badge-todos">—</span>
+      </div>
+      <div class="badge badge--aguardando" data-status="aguardando_contato" onclick="filtrarStatus('aguardando_contato', this)">
+        Aguardando contato <span class="badge__count" id="badge-aguardando">0</span>
+      </div>
+      <div class="badge badge--contato" data-status="contato_realizado" onclick="filtrarStatus('contato_realizado', this)">
+        Contato realizado <span class="badge__count" id="badge-contato">0</span>
+      </div>
+      <div class="badge badge--aprovado" data-status="aprovado" onclick="filtrarStatus('aprovado', this)">
+        Aprovados <span class="badge__count" id="badge-aprovado">0</span>
+      </div>
+      <div class="badge badge--reprovado" data-status="reprovado" onclick="filtrarStatus('reprovado', this)">
+        Reprovados <span class="badge__count" id="badge-reprovado">0</span>
+      </div>
+    </div>
+
+    <!-- Busca -->
+    <div class="toolbar">
+      <input class="search-input" id="busca" type="text"
+             placeholder="Buscar por nome, e-mail ou profissão..."
+             oninput="debounceBusca()">
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nome</th>
+            <th>E-mail</th>
+            <th>Profissão</th>
+            <th>Conselho</th>
+            <th>E-mail enviado</th>
+            <th>Status</th>
+            <th>Cadastrado em</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tabela-body">
+          <tr><td colspan="9"><div class="state-msg">Carregando...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginação -->
+    <div class="pagination" id="paginacao"></div>
+
+    <!-- ── CONFIGURAR CONTA ── -->
+    <div id="config-view">
+      <div class="config-header">
+        <button class="btn-back" onclick="fecharConfig()">← Voltar</button>
+        <span class="config-title">Configurar conta</span>
+      </div>
+
+      <div class="settings-card">
+        <h3>Perfil</h3>
+        <p class="sub">Sua foto e dados de acesso ao painel.</p>
+        <div class="avatar-edit">
+          <span class="avatar avatar-lg" id="cfg-avatar">—</span>
+          <div>
+            <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="selecionarAvatar(event)">
+            <button class="btn-outline" onclick="document.getElementById('avatar-input').click()">Trocar foto</button>
+            <button class="btn-outline" onclick="removerAvatar()" style="margin-left:8px;">Remover</button>
+            <p class="sub" style="margin:10px 0 0;">PNG ou JPG. A imagem é redimensionada e salva neste navegador.</p>
+          </div>
+        </div>
+        <div style="margin-top:20px;display:grid;gap:12px;max-width:420px;">
+          <div><p class="modal-field__label">Nome</p><p class="field-ro" id="cfg-nome">—</p></div>
+          <div><p class="modal-field__label">E-mail</p><p class="field-ro" id="cfg-email">—</p></div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>Segurança <span class="soon">em breve</span></h3>
+        <p class="sub">Alteração de senha e autenticação em duas etapas (2FA), com códigos de backup e recuperação por e-mail, chegam na próxima atualização.</p>
+        <button class="btn-outline" disabled>Alterar senha</button>
+        <button class="btn-outline" disabled style="margin-left:8px;">Ativar 2FA</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL DETALHES / EDIÇÃO ── -->
+<div class="overlay" id="overlay" onclick="fecharModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal__header">
+      <div>
+        <h2 class="modal__title" id="modal-nome">—</h2>
+        <span class="pill" id="modal-status-pill" style="display:inline-block;margin-top:8px;"></span>
+      </div>
+      <button class="modal__close" onclick="fecharModal()">✕</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 24px;">
+      <div class="modal-field">
+        <p class="modal-field__label">E-mail</p>
+        <p class="modal-field__value" id="modal-email">—</p>
+      </div>
+      <div class="modal-field">
+        <p class="modal-field__label">WhatsApp</p>
+        <p class="modal-field__value" id="modal-whatsapp">—</p>
+      </div>
+      <div class="modal-field">
+        <p class="modal-field__label">Profissão</p>
+        <p class="modal-field__value" id="modal-profissao">—</p>
+      </div>
+      <div class="modal-field">
+        <p class="modal-field__label">Conselho</p>
+        <p class="modal-field__value" id="modal-conselho">—</p>
+      </div>
+      <div class="modal-field">
+        <p class="modal-field__label">Cadastrado em</p>
+        <p class="modal-field__value" id="modal-criado">—</p>
+      </div>
+      <div class="modal-field">
+        <p class="modal-field__label">E-mail de confirmação</p>
+        <p class="modal-field__value" id="modal-email-enviado">—</p>
+      </div>
+    </div>
+
+    <hr class="modal-divider">
+
+    <label class="modal-label" for="modal-status">Status</label>
+    <select class="modal-select" id="modal-status">
+      <option value="aguardando_contato">Aguardando contato</option>
+      <option value="contato_realizado">Contato realizado</option>
+      <option value="aprovado">Aprovado</option>
+      <option value="reprovado">Reprovado</option>
+    </select>
+
+    <label class="modal-label" for="modal-notas">Notas internas</label>
+    <textarea class="modal-textarea" id="modal-notas" placeholder="Observações, histórico de contato..."></textarea>
+
+    <button class="btn-salvar" id="btn-salvar" onclick="salvarAlteracoes()">Salvar alterações</button>
+    <p class="modal-feedback" id="modal-feedback"></p>
+
+    <hr class="modal-divider">
+    <div class="danger-zone">
+      <p class="danger-zone__title">Zona de exclusão</p>
+      <p class="danger-text">Excluir é permanente e não pode ser desfeito.</p>
+      <button class="btn-danger" id="btn-excluir" onclick="mostrarConfirmExclusao()">Excluir cadastro</button>
+
+      <div id="confirm-exclusao" style="display:none;margin-top:12px;">
+        <p class="danger-text">Para confirmar, digite <strong>delete</strong> abaixo:</p>
+        <input class="confirm-input" id="confirm-input" type="text" placeholder="delete"
+               autocomplete="off" oninput="validarConfirmExclusao()">
+        <div style="display:flex;gap:8px;">
+          <button class="btn-danger" id="btn-confirma-excluir" onclick="excluirPrescritor()" disabled>Confirmar exclusão</button>
+          <button class="btn-outline" onclick="cancelarExclusao()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Estado global ──────────────────────────────────────────────────────────
+  let token        = localStorage.getItem('uvits_token') || '';
+  let usuarioNome  = localStorage.getItem('uvits_nome')  || '';
+  let usuarioEmail = localStorage.getItem('uvits_email') || '';
+  let statusFiltro = 'todos';
+  let paginaAtual  = 1;
+  let buscaAtual   = '';
+  let prescritorAtual = null;
+  let debounceTimer   = null;
+
+  // ── Inicialização ──────────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    if (token) {
+      mostrarPainel();
+      carregarDados();
+    }
+  });
+
+  // ── LOGIN ──────────────────────────────────────────────────────────────────
+  async function fazerLogin() {
+    const btn   = document.getElementById('btn-login');
+    const erro  = document.getElementById('login-error');
+    const email = document.getElementById('l-email').value.trim();
+    const senha = document.getElementById('l-senha').value;
+
+    erro.style.display = 'none';
+
+    if (!email || !senha) {
+      erro.textContent = 'Preencha e-mail e senha.';
+      erro.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Entrando...';
+
+    try {
+      const res  = await apiFetch('/api/login', 'POST', { email, senha }, false);
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Credenciais inválidas');
+
+      token       = data.token;
+      usuarioNome = data.usuario.nome;
+      usuarioEmail = data.usuario.email || '';
+      localStorage.setItem('uvits_token', token);
+      localStorage.setItem('uvits_nome',  usuarioNome);
+      localStorage.setItem('uvits_email', usuarioEmail);
+
+      mostrarPainel();
+      carregarDados();
+
+    } catch (e) {
+      erro.textContent = e.message;
+      erro.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Entrar';
+    }
+  }
+
+  function sair() {
+    token = '';
+    usuarioNome = '';
+    usuarioEmail = '';
+    localStorage.removeItem('uvits_token');
+    localStorage.removeItem('uvits_nome');
+    localStorage.removeItem('uvits_email');
+    document.getElementById('painel').style.display = 'none';
+    document.getElementById('tela-login').style.display = 'flex';
+    document.getElementById('l-senha').value = '';
+    document.getElementById('btn-login').disabled = false;
+    document.getElementById('btn-login').textContent = 'Entrar';
+  }
+
+  function mostrarPainel() {
+    document.getElementById('tela-login').style.display = 'none';
+    document.getElementById('painel').style.display     = 'flex';
+    document.getElementById('nav-nome').textContent     = usuarioNome;
+    document.querySelector('.main').classList.remove('showing-config');
+    renderAvatar();
+  }
+
+  // ── CONTA / AVATAR ──────────────────────────────────────────────────────────
+  function iniciais(nome) {
+    return (nome || '').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?';
+  }
+
+  function renderAvatar() {
+    const data = localStorage.getItem('uvits_admin_avatar');
+    const html = data ? `<img src="${data}" alt="">` : esc(iniciais(usuarioNome));
+    const nav = document.getElementById('nav-avatar'); if (nav) nav.innerHTML = html;
+    const cfg = document.getElementById('cfg-avatar'); if (cfg) cfg.innerHTML = html;
+  }
+
+  function abrirConfig() {
+    document.getElementById('cfg-nome').textContent  = usuarioNome  || '—';
+    document.getElementById('cfg-email').textContent = usuarioEmail || '—';
+    renderAvatar();
+    document.querySelector('.main').classList.add('showing-config');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function fecharConfig() {
+    document.querySelector('.main').classList.remove('showing-config');
+  }
+
+  // Redimensiona a imagem para 256×256 (cover) e salva como dataURL — evita
+  // estourar a cota do localStorage e padroniza o avatar.
+  function selecionarAvatar(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(size / img.width, size / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+      try {
+        localStorage.setItem('uvits_admin_avatar', canvas.toDataURL('image/jpeg', 0.85));
+        renderAvatar();
+      } catch (_) {
+        alert('Não foi possível salvar a imagem.');
+      }
+      e.target.value = '';
+    };
+    img.onerror = () => alert('Arquivo de imagem inválido.');
+    const reader = new FileReader();
+    reader.onload = () => { img.src = reader.result; };
+    reader.readAsDataURL(file);
+  }
+
+  function removerAvatar() {
+    localStorage.removeItem('uvits_admin_avatar');
+    renderAvatar();
+  }
+
+  // ── DADOS ──────────────────────────────────────────────────────────────────
+  async function carregarDados() {
+    renderTabela(null); // loading state
+
+    const params = new URLSearchParams({
+      pagina: paginaAtual,
+      ...(statusFiltro !== 'todos' && { status: statusFiltro }),
+      ...(buscaAtual && { busca: buscaAtual })
+    });
+
+    try {
+      const res  = await apiFetch(`/api/prescritores?${params}`, 'GET');
+      if (res.status === 401) { sair(); return; }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      renderBadges(data.badges, data.paginacao.total);
+      renderTabela(data.prescritores);
+      renderPaginacao(data.paginacao);
+
+    } catch (e) {
+      document.getElementById('tabela-body').innerHTML =
+        `<tr><td colspan="9"><div class="state-msg"><strong>Erro ao carregar</strong>${e.message}</div></td></tr>`;
+    }
+  }
+
+  // ── FILTROS ────────────────────────────────────────────────────────────────
+  function filtrarStatus(status, el) {
+    statusFiltro = status;
+    paginaAtual  = 1;
+    document.querySelectorAll('.badge').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    carregarDados();
+  }
+
+  function debounceBusca() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      buscaAtual  = document.getElementById('busca').value.trim();
+      paginaAtual = 1;
+      carregarDados();
+    }, 400);
+  }
+
+  // ── RENDER ─────────────────────────────────────────────────────────────────
+  function renderBadges(badges, total) {
+    document.getElementById('badge-todos').textContent      = total;
+    document.getElementById('badge-aguardando').textContent = badges.aguardando_contato || 0;
+    document.getElementById('badge-contato').textContent    = badges.contato_realizado  || 0;
+    document.getElementById('badge-aprovado').textContent   = badges.aprovado           || 0;
+    document.getElementById('badge-reprovado').textContent  = badges.reprovado          || 0;
+
+    // Métricas no topo
+    document.getElementById('m-total').textContent      = total;
+    document.getElementById('m-aguardando').textContent = badges.aguardando_contato || 0;
+    document.getElementById('m-aprovado').textContent   = badges.aprovado           || 0;
+    document.getElementById('m-reprovado').textContent  = badges.reprovado          || 0;
+  }
+
+  const STATUS_LABEL = {
+    aguardando_contato: 'Aguardando contato',
+    contato_realizado:  'Contato realizado',
+    aprovado:           'Aprovado',
+    reprovado:          'Reprovado'
+  };
+
+  function renderTabela(rows) {
+    const tbody = document.getElementById('tabela-body');
+
+    if (!rows) {
+      // Skeleton animado enquanto carrega
+      tbody.innerHTML = Array.from({ length: 6 }).map(() => `
+        <tr>${Array.from({ length: 9 }).map(() =>
+          `<td><span class="skeleton" style="width:${40 + Math.floor(Math.random() * 45)}%"></span></td>`
+        ).join('')}</tr>
+      `).join('');
+      return;
+    }
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9"><div class="state-msg"><strong>Nenhum resultado</strong>Tente outros filtros ou termos de busca.</div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(p => `
+      <tr>
+        <td data-label="#" style="color:var(--text);font-size:11px;">#${p.id}</td>
+        <td data-label="Nome" style="font-weight:600;">${esc(p.nome)}</td>
+        <td data-label="E-mail" style="color:var(--text);">${esc(p.email)}</td>
+        <td data-label="Profissão">${esc(p.profissao || '—')}</td>
+        <td data-label="Conselho" style="color:var(--text);font-size:12px;">${esc(p.conselho || '—')}</td>
+        <td data-label="E-mail enviado" style="text-align:center;">
+          <span class="${p.email_enviado ? 'email-ok' : 'email-nok'}"
+                title="${p.email_enviado ? 'Enviado' : 'Não enviado'}">
+            ${p.email_enviado ? '✓' : '✗'}
+          </span>
+        </td>
+        <td data-label="Status"><span class="pill pill--${p.status}">${STATUS_LABEL[p.status] || p.status}</span></td>
+        <td data-label="Cadastrado em" style="color:var(--text);font-size:12px;white-space:nowrap;">${formatarData(p.criado_em)}</td>
+        <td data-label=""><button class="btn-ver" onclick="abrirModal(${p.id})">Ver detalhes</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function renderPaginacao({ total, pagina, porPagina, totalPaginas }) {
+    const el = document.getElementById('paginacao');
+    if (totalPaginas <= 1) { el.innerHTML = ''; return; }
+
+    const inicio = (pagina - 1) * porPagina + 1;
+    const fim    = Math.min(pagina * porPagina, total);
+
+    let html = `<span class="pagination-info">${inicio}–${fim} de ${total}</span>`;
+    html += `<button class="btn-page" onclick="irPagina(${pagina - 1})" ${pagina === 1 ? 'disabled' : ''}>‹</button>`;
+
+    for (let i = 1; i <= totalPaginas; i++) {
+      if (totalPaginas > 7 && Math.abs(i - pagina) > 2 && i !== 1 && i !== totalPaginas) {
+        if (i === 2 || i === totalPaginas - 1) html += `<span style="padding:0 4px;color:var(--text)">…</span>`;
+        continue;
+      }
+      html += `<button class="btn-page ${i === pagina ? 'active' : ''}" onclick="irPagina(${i})">${i}</button>`;
+    }
+
+    html += `<button class="btn-page" onclick="irPagina(${pagina + 1})" ${pagina === totalPaginas ? 'disabled' : ''}>›</button>`;
+    el.innerHTML = html;
+  }
+
+  function irPagina(n) {
+    paginaAtual = n;
+    carregarDados();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── MODAL ──────────────────────────────────────────────────────────────────
+  // Cache local para não refazer o GET ao abrir modal
+  let cacheRows = [];
+
+  async function abrirModal(id) {
+    // Recarrega dados frescos se não estiver em cache
+    let p = cacheRows.find(r => r.id === id);
+    if (!p) {
+      const params = new URLSearchParams({ pagina: paginaAtual,
+        ...(statusFiltro !== 'todos' && { status: statusFiltro }),
+        ...(buscaAtual && { busca: buscaAtual }) });
+      const res  = await apiFetch(`/api/prescritores?${params}`, 'GET');
+      const data = await res.json();
+      cacheRows  = data.prescritores || [];
+      p = cacheRows.find(r => r.id === id);
+    }
+    if (!p) return;
+    prescritorAtual = p;
+
+    document.getElementById('modal-nome').textContent          = p.nome;
+    document.getElementById('modal-email').textContent         = p.email;
+    document.getElementById('modal-whatsapp').textContent      = p.whatsapp  || '—';
+    document.getElementById('modal-profissao').textContent     = p.profissao || '—';
+    document.getElementById('modal-conselho').textContent      = p.conselho  || '—';
+    document.getElementById('modal-criado').textContent        = formatarData(p.criado_em);
+    document.getElementById('modal-email-enviado').textContent = p.email_enviado ? '✓ Enviado' : '✗ Não enviado';
+    document.getElementById('modal-status').value              = p.status;
+    document.getElementById('modal-notas').value               = p.notas || '';
+    const mpill = document.getElementById('modal-status-pill');
+    mpill.className = 'pill pill--' + p.status;
+    mpill.textContent = STATUS_LABEL[p.status] || p.status;
+    document.getElementById('modal-feedback').className        = 'modal-feedback';
+    document.getElementById('modal-feedback').textContent      = '';
+    document.getElementById('btn-salvar').disabled             = false;
+    document.getElementById('btn-salvar').textContent          = 'Salvar alterações';
+
+    cancelarExclusao(); // garante a zona de exclusão recolhida ao abrir
+
+    document.getElementById('overlay').classList.add('open');
+  }
+
+  function fecharModal(e) {
+    if (!e || e.target === document.getElementById('overlay') || e.type === 'click' && !e.target.closest) {
+      document.getElementById('overlay').classList.remove('open');
+      prescritorAtual = null;
+    }
+  }
+
+  async function salvarAlteracoes() {
+    if (!prescritorAtual) return;
+
+    const btn      = document.getElementById('btn-salvar');
+    const feedback = document.getElementById('modal-feedback');
+    const status   = document.getElementById('modal-status').value;
+    const notas    = document.getElementById('modal-notas').value;
+
+    btn.disabled    = true;
+    btn.textContent = 'Salvando...';
+    feedback.className   = 'modal-feedback';
+    feedback.textContent = '';
+
+    try {
+      const res  = await apiFetch(`/api/prescritores?id=${prescritorAtual.id}`, 'PATCH', { status, notas });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      // Atualiza cache local
+      const idx = cacheRows.findIndex(r => r.id === prescritorAtual.id);
+      if (idx !== -1) cacheRows[idx] = data.prescritor;
+      prescritorAtual = data.prescritor;
+
+      feedback.textContent = '✓ Salvo com sucesso';
+      feedback.className   = 'modal-feedback ok';
+
+      // Atualiza o pill de status no cabeçalho do modal
+      const mpill = document.getElementById('modal-status-pill');
+      mpill.className = 'pill pill--' + data.prescritor.status;
+      mpill.textContent = STATUS_LABEL[data.prescritor.status] || data.prescritor.status;
+
+      // Recarrega tabela para refletir mudança de status
+      carregarDados();
+
+    } catch (e) {
+      feedback.textContent = e.message || 'Erro ao salvar';
+      feedback.className   = 'modal-feedback err';
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Salvar alterações';
+    }
+  }
+
+  // ── EXCLUSÃO (com dupla checagem) ───────────────────────────────────────────
+  function mostrarConfirmExclusao() {
+    document.getElementById('btn-excluir').style.display = 'none';
+    document.getElementById('confirm-exclusao').style.display = 'block';
+    const inp = document.getElementById('confirm-input');
+    inp.value = '';
+    validarConfirmExclusao();
+    inp.focus();
+  }
+
+  function cancelarExclusao() {
+    const conf = document.getElementById('confirm-exclusao');
+    const btn  = document.getElementById('btn-excluir');
+    if (conf) conf.style.display = 'none';
+    if (btn)  btn.style.display = 'inline-block';
+    const inp = document.getElementById('confirm-input');
+    if (inp) inp.value = '';
+  }
+
+  function validarConfirmExclusao() {
+    const ok = document.getElementById('confirm-input').value.trim().toLowerCase() === 'delete';
+    document.getElementById('btn-confirma-excluir').disabled = !ok;
+  }
+
+  async function excluirPrescritor() {
+    if (!prescritorAtual) return;
+    // Dupla checagem: precisa ter digitado exatamente "delete"
+    if (document.getElementById('confirm-input').value.trim().toLowerCase() !== 'delete') return;
+
+    const btn      = document.getElementById('btn-confirma-excluir');
+    const feedback = document.getElementById('modal-feedback');
+    btn.disabled = true; btn.textContent = 'Excluindo...';
+    feedback.className = 'modal-feedback'; feedback.textContent = '';
+
+    try {
+      const res = await apiFetch(`/api/prescritores?id=${prescritorAtual.id}`, 'DELETE');
+      if (res.status === 401) { sair(); return; }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao excluir');
+
+      cacheRows = cacheRows.filter(r => r.id !== prescritorAtual.id);
+      prescritorAtual = null;
+      document.getElementById('overlay').classList.remove('open');
+      carregarDados();
+    } catch (e) {
+      feedback.textContent = e.message || 'Erro ao excluir';
+      feedback.className   = 'modal-feedback err';
+      btn.disabled = false; btn.textContent = 'Confirmar exclusão';
+    }
+  }
+
+  // ── UTILITÁRIOS ────────────────────────────────────────────────────────────
+  function apiFetch(url, method, body, useToken = true) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (useToken && token) headers['Authorization'] = `Bearer ${token}`;
+    return fetch(url, { method, headers, ...(body ? { body: JSON.stringify(body) } : {}) });
+  }
+
+  function formatarData(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
