@@ -46,7 +46,7 @@ async function enviarEmail({ usados, limite, pct, mes }) {
 
   const corpo = {
     from,
-    to: [to],
+    to: to.includes(',') ? to.split(',').map(e => e.trim()) : [to],
     subject: `⚠️ Upstash Redis: ${pct}% do limite de comandos usado (${mes})`,
     html: `
       <h2>Alerta de uso do Redis (Upstash) — uso compartilhado</h2>

@@ -193,7 +193,7 @@ module.exports = async function handler(req, res) {
     // E-mail 2: aviso interno para a Uvits
     resend.emails.send({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: TO_EMAIL,
+      to: TO_EMAIL.includes(',') ? TO_EMAIL.split(',').map(e => e.trim()) : TO_EMAIL,
       subject: `Novo prescritor: ${nome}`,
       html: `
         <!DOCTYPE html>
