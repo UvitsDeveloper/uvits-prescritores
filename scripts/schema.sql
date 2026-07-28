@@ -28,7 +28,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
 --
 -- O CPF NÃO é armazenado nesta tabela: fica exclusivamente como metafield no
 -- cliente Shopify correspondente (fonte única, evita duplicação de dado
--- sensível sob a LGPD) — ver shopify_customer_id abaixo.
+-- sensível sob a LGPD) — ver shopify_customer_id abaixo. cpf_confirmado é só
+-- uma flag booleana (nunca o valor) indicando que o metafield já foi gravado
+-- com sucesso — usada pra não exigir o CPF de novo numa segunda tentativa de
+-- aprovação (ver api/prescritores.js, PATCH).
 CREATE TABLE IF NOT EXISTS prescritores (
   id                  SERIAL PRIMARY KEY,
   nome                VARCHAR(120)  NOT NULL,
@@ -40,6 +43,7 @@ CREATE TABLE IF NOT EXISTS prescritores (
   status              VARCHAR(30)   NOT NULL DEFAULT 'pendente'
                         CHECK (status IN ('pendente','pendente_cpf','aprovado','ativo','reprovado','suspenso','inativo')),
   shopify_customer_id VARCHAR(60),
+  cpf_confirmado      BOOLEAN       NOT NULL DEFAULT FALSE,
   origem              VARCHAR(20)   NOT NULL DEFAULT 'formulario'
                         CHECK (origem IN ('formulario','manual','importado')),
   notas               TEXT,

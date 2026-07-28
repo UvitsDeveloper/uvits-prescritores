@@ -45,4 +45,39 @@ async function sincronizarComShopify({ email, nome }) {
   }
 }
 
-module.exports = { sincronizarComShopify };
+// Fase 4 (CPF/metafield): grava o CPF no cliente Shopify já vinculado. Nunca
+// loga o valor recebido — nem em sucesso, nem em erro.
+async function confirmarCpfNaShopify({ shopifyCustomerId, cpf }) {
+  const serviceKey = process.env.SHOPIFY_SYNC_SERVICE_KEY;
+  if (!serviceKey) {
+    return { ok: false, error: 'SHOPIFY_SYNC_SERVICE_KEY não configurada' };
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${WORKER_API_URL}/internal/shopify/prescriber-cpf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: JSON.stringify({ shopifyCustomerId, cpf }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      return { ok: false, error: `Worker respondeu ${response.status}: ${body.slice(0, 300)}` };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: `Falha ao chamar o Worker: ${err.message}` };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+module.exports = { sincronizarComShopify, confirmarCpfNaShopify };
