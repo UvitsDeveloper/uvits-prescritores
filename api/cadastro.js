@@ -115,8 +115,8 @@ module.exports = async function handler(req, res) {
 
   try {
     const { rows } = await sql`
-      INSERT INTO prescritores (nome, email, whatsapp, profissao, conselho, email_enviado, status)
-      VALUES (${nome}, ${email}, ${whatsapp || null}, ${profissao || null}, ${conselho || null}, false, 'aguardando_contato')
+      INSERT INTO prescritores (nome, email, whatsapp, profissao, conselho, email_enviado, status, origem)
+      VALUES (${nome}, ${email}, ${whatsapp || null}, ${profissao || null}, ${conselho || null}, false, 'pendente', 'formulario')
       RETURNING id
     `;
     prescritorId = rows[0].id;

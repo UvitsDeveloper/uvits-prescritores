@@ -14,24 +14,43 @@ CREATE TABLE IF NOT EXISTS usuarios (
 );
 
 -- Tabela de cadastros de prescritores
+--
+-- Modelo de status (regras de negócio definidas na especificação funcional
+-- do programa, 2026-07-28) — substitui o modelo antigo de 4 status
+-- (aguardando_contato/contato_realizado/aprovado/reprovado):
+--   pendente      cadastro recebido (formulário público ou manual), aguardando revisão
+--   pendente_cpf  dados profissionais já conferidos, falta CPF
+--   aprovado      CPF preenchido, administrador confirmou explicitamente
+--   ativo         aprovado + tag "prescritor" na Shopify + cupom de indicação criado
+--   reprovado     não atende às regras do programa
+--   suspenso      ativo com cupom/benefícios removidos temporariamente (ação mínima)
+--   inativo       tag leve de referência — participação encerrada, reversível
+--
+-- O CPF NÃO é armazenado nesta tabela: fica exclusivamente como metafield no
+-- cliente Shopify correspondente (fonte única, evita duplicação de dado
+-- sensível sob a LGPD) — ver shopify_customer_id abaixo.
 CREATE TABLE IF NOT EXISTS prescritores (
-  id              SERIAL PRIMARY KEY,
-  nome            VARCHAR(120)  NOT NULL,
-  email           VARCHAR(254)  NOT NULL,
-  whatsapp        VARCHAR(30),
-  profissao       VARCHAR(60),
-  conselho        VARCHAR(60),
-  email_enviado   BOOLEAN       NOT NULL DEFAULT FALSE,
-  status          VARCHAR(30)   NOT NULL DEFAULT 'aguardando_contato'
-                    CHECK (status IN ('aguardando_contato','contato_realizado','aprovado','reprovado')),
-  notas           TEXT,
-  criado_em       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-  atualizado_em   TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+  id                  SERIAL PRIMARY KEY,
+  nome                VARCHAR(120)  NOT NULL,
+  email               VARCHAR(254)  NOT NULL,
+  whatsapp            VARCHAR(30),
+  profissao           VARCHAR(60),
+  conselho            VARCHAR(60),
+  email_enviado       BOOLEAN       NOT NULL DEFAULT FALSE,
+  status              VARCHAR(30)   NOT NULL DEFAULT 'pendente'
+                        CHECK (status IN ('pendente','pendente_cpf','aprovado','ativo','reprovado','suspenso','inativo')),
+  shopify_customer_id VARCHAR(60),
+  origem              VARCHAR(20)   NOT NULL DEFAULT 'formulario'
+                        CHECK (origem IN ('formulario','manual','importado')),
+  notas               TEXT,
+  criado_em           TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+  atualizado_em       TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
 -- Índices
-CREATE INDEX IF NOT EXISTS idx_prescritores_status    ON prescritores (status);
-CREATE INDEX IF NOT EXISTS idx_prescritores_criado_em ON prescritores (criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_prescritores_status              ON prescritores (status);
+CREATE INDEX IF NOT EXISTS idx_prescritores_criado_em           ON prescritores (criado_em DESC);
+CREATE INDEX IF NOT EXISTS idx_prescritores_shopify_customer_id ON prescritores (shopify_customer_id);
 
 -- Unicidade: um e-mail e um registro de conselho (CRM/CRN) por prescritor
 -- (também serve de índice para busca por e-mail). Conselho é gravado em MAIÚSCULAS.

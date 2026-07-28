@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
       // Registros da página
       const dataQuery = `
         SELECT id, nome, email, whatsapp, profissao, conselho,
-               email_enviado, status, notas, criado_em, atualizado_em
+               email_enviado, status, shopify_customer_id, origem, notas, criado_em, atualizado_em
         FROM prescritores
         ${where}
         ORDER BY criado_em DESC
@@ -89,7 +89,8 @@ module.exports = async function handler(req, res) {
     if (!id || isNaN(id))
       return res.status(400).json({ error: 'ID inválido' });
 
-    const STATUS_VALIDOS = ['aguardando_contato', 'contato_realizado', 'aprovado', 'reprovado'];
+    // Modelo de status vigente — ver comentário em scripts/schema.sql.
+    const STATUS_VALIDOS = ['pendente', 'pendente_cpf', 'aprovado', 'ativo', 'reprovado', 'suspenso', 'inativo'];
     const { status, notas } = req.body || {};
 
     if (status && !STATUS_VALIDOS.includes(status))
@@ -132,7 +133,19 @@ module.exports = async function handler(req, res) {
     if (!id || isNaN(id))
       return res.status(400).json({ error: 'ID inválido' });
 
+    // Regra de negócio: cadastros que já receberam uma decisão administrativa
+    // (aprovado, ativo, reprovado, suspenso, inativo) preservam histórico —
+    // exclusão definitiva só é permitida enquanto o cadastro ainda está
+    // pendente (nunca foi analisado). Use a inativação pros demais casos.
+    const EXCLUSAO_BLOQUEADA = ['aprovado', 'ativo', 'reprovado', 'suspenso', 'inativo'];
+
     try {
+      const { rows: existente } = await sql`SELECT status FROM prescritores WHERE id = ${id}`;
+      if (existente.length === 0)
+        return res.status(404).json({ error: 'Cadastro não encontrado' });
+      if (EXCLUSAO_BLOQUEADA.includes(existente[0].status))
+        return res.status(409).json({ error: 'Este cadastro já recebeu uma decisão administrativa e não pode ser excluído — use a inativação para preservar o histórico.' });
+
       // Exclui estritamente por id único — nunca em massa
       const { rowCount } = await sql`DELETE FROM prescritores WHERE id = ${id}`;
       if (rowCount === 0)
