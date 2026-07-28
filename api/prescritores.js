@@ -2,7 +2,7 @@ const { sql }      = require('@vercel/postgres');
 const { autenticar } = require('./_auth');
 const { registrarUso } = require('./_usage');
 const { limitarDelete } = require('./_ratelimit');
-const { sincronizarComShopify, confirmarCpfNaShopify } = require('./_shopifySync');
+const { sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor } = require('./_shopifySync');
 const { validarCpf } = require('./_cpf');
 
 module.exports = async function handler(req, res) {
@@ -93,7 +93,7 @@ module.exports = async function handler(req, res) {
 
     // Modelo de status vigente — ver comentário em scripts/schema.sql.
     const STATUS_VALIDOS = ['pendente', 'pendente_cpf', 'aprovado', 'ativo', 'reprovado', 'suspenso', 'inativo'];
-    const { status, notas, cpf } = req.body || {};
+    const { status, notas, cpf, percentualIndicacao, valorMinimoIndicacao } = req.body || {};
 
     if (status && !STATUS_VALIDOS.includes(status))
       return res.status(400).json({ error: 'Status inválido' });
@@ -102,32 +102,65 @@ module.exports = async function handler(req, res) {
       const novoStatus = status || null;
       const novasNotas = notas !== undefined ? String(notas).slice(0, 2000) : null;
 
-      // Fase 4 (CPF/metafield): "aprovado" exige CPF já confirmado na Shopify
-      // — nesta requisição (validado + gravado agora) ou numa anterior
-      // (cpf_confirmado já true). Tudo isso acontece ANTES de tocar o
-      // Postgres: se falhar, o status não muda (ver plano da Fase 4).
+      // Uma única leitura do estado atual — usada pelas validações de CPF
+      // (Fase 4), aprovação e ativação (Fase 5) abaixo, todas ANTES de tocar
+      // o Postgres: se qualquer uma falhar, nada é salvo pela metade.
+      const { rows: atualRows } = await sql`SELECT * FROM prescritores WHERE id = ${id}`;
+      if (atualRows.length === 0)
+        return res.status(404).json({ error: 'Cadastro não encontrado' });
+      const atual = atualRows[0];
+
+      // Fase 4 (CPF/metafield): desacoplado do status-alvo — permite "salvar
+      // CPF sem aprovar" (admin confere os dados antes de decidir aprovar).
       let cpfConfirmadoNestaRequisicao = false;
+      if (cpf !== undefined) {
+        if (!atual.shopify_customer_id)
+          return res.status(400).json({ error: 'Cadastro precisa estar vinculado a um cliente Shopify (avance para pendente_cpf primeiro).' });
+        if (!validarCpf(cpf))
+          return res.status(400).json({ error: 'CPF inválido' });
+
+        const confirmacao = await confirmarCpfNaShopify({ shopifyCustomerId: atual.shopify_customer_id, cpf });
+        if (!confirmacao.ok) {
+          console.error('[prescritores PATCH] falha ao confirmar CPF na Shopify:', confirmacao.error);
+          return res.status(502).json({ error: 'Não foi possível confirmar o CPF na Shopify. Tente novamente.' });
+        }
+        cpfConfirmadoNestaRequisicao = true;
+      }
 
       if (novoStatus === 'aprovado') {
-        const { rows: atual } = await sql`SELECT shopify_customer_id, cpf_confirmado FROM prescritores WHERE id = ${id}`;
-        if (atual.length === 0)
-          return res.status(404).json({ error: 'Cadastro não encontrado' });
-
-        if (!atual[0].shopify_customer_id)
+        if (!atual.shopify_customer_id)
           return res.status(400).json({ error: 'Cadastro precisa estar vinculado a um cliente Shopify antes de aprovar (avance para pendente_cpf primeiro).' });
-
-        if (cpf !== undefined) {
-          if (!validarCpf(cpf))
-            return res.status(400).json({ error: 'CPF inválido' });
-
-          const confirmacao = await confirmarCpfNaShopify({ shopifyCustomerId: atual[0].shopify_customer_id, cpf });
-          if (!confirmacao.ok) {
-            console.error('[prescritores PATCH] falha ao confirmar CPF na Shopify:', confirmacao.error);
-            return res.status(502).json({ error: 'Não foi possível confirmar o CPF na Shopify. Tente novamente.' });
-          }
-          cpfConfirmadoNestaRequisicao = true;
-        } else if (!atual[0].cpf_confirmado) {
+        if (!cpfConfirmadoNestaRequisicao && !atual.cpf_confirmado)
           return res.status(400).json({ error: 'CPF obrigatório para aprovar.' });
+      }
+
+      // Fase 5 (cupom de indicação): "ativo" só a partir de "aprovado", e só
+      // é persistido quando o Worker confirma sincronização completa nas
+      // duas plataformas (Shopify + Yampi) — seção 7 do documento de regras.
+      let ativacao;
+      if (novoStatus === 'ativo') {
+        if (atual.status !== 'aprovado')
+          return res.status(400).json({ error: 'Cadastro precisa estar aprovado antes de ativar.' });
+
+        const percent = percentualIndicacao !== undefined ? Number(percentualIndicacao) : 10;
+        if (!Number.isFinite(percent) || percent < 1 || percent > 30)
+          return res.status(400).json({ error: 'Percentual de indicação deve estar entre 1 e 30.' });
+
+        const minValue = valorMinimoIndicacao !== undefined ? Number(valorMinimoIndicacao) : 0;
+        if (percent > 15 && (!Number.isFinite(minValue) || minValue < 79.99))
+          return res.status(400).json({ error: 'Percentual acima de 15% exige valor mínimo de compra de pelo menos R$ 79,99.' });
+
+        ativacao = await ativarPrescritor({ shopifyCustomerId: atual.shopify_customer_id, percent, minValue });
+        if (!ativacao.ok) {
+          console.error('[prescritores PATCH] falha ao chamar ativação:', ativacao.error);
+          return res.status(502).json({ error: 'Não foi possível ativar o prescritor. Tente novamente.' });
+        }
+        if (!ativacao.activated) {
+          return res.status(502).json({
+            error: 'Ativação ainda não concluída — sincronização parcial. Tente novamente.',
+            syncStatus: ativacao.syncStatus,
+            coupon: ativacao.coupon,
+          });
         }
       }
 
@@ -144,8 +177,12 @@ module.exports = async function handler(req, res) {
           SET status = ${novoStatus}, cpf_confirmado = cpf_confirmado OR ${cpfConfirmadoNestaRequisicao}
           WHERE id = ${id}
         `;
-      } else if (novasNotas !== null) {
-        await sql`UPDATE prescritores SET notas = ${novasNotas} WHERE id = ${id}`;
+      } else if (novasNotas !== null || cpfConfirmadoNestaRequisicao) {
+        await sql`
+          UPDATE prescritores
+          SET notas = COALESCE(${novasNotas}, notas), cpf_confirmado = cpf_confirmado OR ${cpfConfirmadoNestaRequisicao}
+          WHERE id = ${id}
+        `;
       }
 
       const { rows } = await sql`SELECT * FROM prescritores WHERE id = ${id}`;
@@ -171,7 +208,7 @@ module.exports = async function handler(req, res) {
         }
       }
 
-      return res.status(200).json({ prescritor, shopifySync });
+      return res.status(200).json({ prescritor, shopifySync, ativacao });
 
     } catch (err) {
       console.error('[prescritores PATCH] erro:', err);
