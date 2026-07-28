@@ -4,6 +4,7 @@ const { registrarUso } = require('./_usage');
 const { limitarDelete } = require('./_ratelimit');
 const { sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor, desativarPrescritor, reativarPrescritor } = require('./_shopifySync');
 const { validarCpf } = require('./_cpf');
+const { enviarNotificacao } = require('./_notificacoes');
 
 module.exports = async function handler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -236,6 +237,33 @@ module.exports = async function handler(req, res) {
           prescritor = atualizado[0];
         } else {
           console.error('[prescritores PATCH] falha ao sincronizar com Shopify:', sync.error);
+        }
+      }
+
+      // Fase 7 (notificações por e-mail) — dispara depois que a mudança já
+      // foi persistida no Postgres. Nunca bloqueia a resposta do PATCH — falha
+      // de e-mail vira log, nunca erro pro admin. Só dispara quando houve uma
+      // transição de verdade (evita reenviar ao resalvar o mesmo status, ex.:
+      // editando só as notas).
+      if (novoStatus && atual.status !== novoStatus) {
+        try {
+          if (novoStatus === 'aprovado') {
+            await enviarNotificacao('aprovado', { nome: prescritor.nome, email: prescritor.email });
+          } else if (novoStatus === 'reprovado') {
+            await enviarNotificacao('reprovado', { nome: prescritor.nome, email: prescritor.email });
+          } else if (novoStatus === 'suspenso') {
+            await enviarNotificacao('suspenso', { nome: prescritor.nome, email: prescritor.email });
+          } else if (novoStatus === 'ativo' && ativacao?.coupon) {
+            const evento = atual.status === 'aprovado' ? 'ativado' : 'reativado';
+            await enviarNotificacao(evento, {
+              nome: prescritor.nome,
+              email: prescritor.email,
+              codigoCupom: ativacao.coupon.code,
+              percentualCupom: ativacao.coupon.percent,
+            });
+          }
+        } catch (err) {
+          console.error('[prescritores PATCH] falha ao enviar notificação por e-mail:', err);
         }
       }
 

@@ -1,14 +1,7 @@
-const { Resend } = require('resend');
 const { sql }    = require('@vercel/postgres');
 const { limitarCadastro } = require('./_ratelimit');
 const { registrarUso }    = require('./_usage');
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Configuráveis via variáveis de ambiente no Vercel
-const FROM_EMAIL = process.env.FROM_EMAIL || 'contato@uvits.com.br';
-const TO_EMAIL   = process.env.TO_EMAIL   || 'contato@uvits.com.br';
-const FROM_NAME  = process.env.FROM_NAME  || 'Uvits Pro Prescritor';
+const { enviarNotificacao } = require('./_notificacoes');
 
 // ── Sanitização: remove tags HTML e limita tamanho ───────────────────────────
 function sanitize(value, maxLength = 200) {
@@ -130,116 +123,18 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Erro ao processar cadastro. Tente novamente.' });
   }
 
-  // ── 2. Envio dos e-mails ─────────────────────────────────────────────────────
-  // Promise.allSettled: ambos são sempre tentados, independente de falha.
-  const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-
-  const [r1, r2] = await Promise.allSettled([
-
-    // E-mail 1: confirmação para o prescritor
-    resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: email,
-      subject: 'Cadastro recebido — Uvits Pro Prescritor',
-      html: `
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-        <body style="margin:0;padding:0;background:#F5F1EC;font-family:'Inter',Arial,sans-serif;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F1EC;padding:40px 0;">
-            <tr><td align="center">
-              <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E8E3DD;">
-                <tr>
-                  <td style="background:#1C2620;padding:32px 40px;text-align:center;">
-                    <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2EC4A5;">UVITS PRO PRESCRITOR</p>
-                    <h1 style="margin:10px 0 0;font-size:24px;font-weight:900;color:#fff;letter-spacing:-0.5px;">Cadastro recebido!</h1>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:36px 40px;">
-                    <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
-                    <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
-                      Recebemos o seu cadastro no programa <strong>Uvits Pro Prescritor</strong>.
-                      Nossa equipe vai validar suas informações e você receberá uma confirmação em até <strong>24 horas úteis</strong>.
-                    </p>
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F1EC;border-radius:10px;padding:20px;margin-bottom:24px;">
-                      <tr><td style="padding:6px 0;font-size:13px;color:#5a6b5e;"><strong style="color:#1C2620;">Nome:</strong> ${nome}</td></tr>
-                      <tr><td style="padding:6px 0;font-size:13px;color:#5a6b5e;"><strong style="color:#1C2620;">Email:</strong> ${email}</td></tr>
-                      <tr><td style="padding:6px 0;font-size:13px;color:#5a6b5e;"><strong style="color:#1C2620;">WhatsApp:</strong> ${whatsapp || '—'}</td></tr>
-                      <tr><td style="padding:6px 0;font-size:13px;color:#5a6b5e;"><strong style="color:#1C2620;">Profissão:</strong> ${profissao || '—'}</td></tr>
-                      <tr><td style="padding:6px 0;font-size:13px;color:#5a6b5e;"><strong style="color:#1C2620;">Conselho:</strong> ${conselho || '—'}</td></tr>
-                    </table>
-                    <a href="https://uvits.com.br" style="display:inline-block;background:#2EC4A5;color:#fff;font-size:13px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:8px;">
-                      Visitar uvits.com.br →
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background:#F5F1EC;padding:20px 40px;border-top:1px solid #E8E3DD;text-align:center;">
-                    <p style="margin:0;font-size:11px;color:#aab8b2;line-height:1.6;">
-                      🔒 Dados protegidos pela LGPD · Nenhuma informação compartilhada com terceiros<br>
-                      Uvits Vitaminas · uvits.com.br
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td></tr>
-          </table>
-        </body>
-        </html>
-      `
-    }),
-
-    // E-mail 2: aviso interno para a Uvits
-    resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to: TO_EMAIL.includes(',') ? TO_EMAIL.split(',').map(e => e.trim()) : TO_EMAIL,
-      subject: `Novo prescritor: ${nome}`,
-      html: `
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-        <head><meta charset="UTF-8"></head>
-        <body style="margin:0;padding:0;background:#F5F1EC;font-family:'Inter',Arial,sans-serif;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F1EC;padding:40px 0;">
-            <tr><td align="center">
-              <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #E8E3DD;">
-                <tr>
-                  <td style="background:#1C2620;padding:24px 40px;">
-                    <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2EC4A5;">UVITS PRO PRESCRITOR</p>
-                    <h1 style="margin:8px 0 0;font-size:20px;font-weight:900;color:#fff;">Novo cadastro recebido</h1>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:32px 40px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F1EC;border-radius:10px;padding:20px;">
-                      <tr><td style="padding:8px 0;font-size:14px;color:#5a6b5e;border-bottom:1px solid #E8E3DD;"><strong style="color:#1C2620;display:inline-block;width:110px;">Nome</strong> ${nome}</td></tr>
-                      <tr><td style="padding:8px 0;font-size:14px;color:#5a6b5e;border-bottom:1px solid #E8E3DD;"><strong style="color:#1C2620;display:inline-block;width:110px;">Email</strong> <a href="mailto:${email}" style="color:#2EC4A5;">${email}</a></td></tr>
-                      <tr><td style="padding:8px 0;font-size:14px;color:#5a6b5e;border-bottom:1px solid #E8E3DD;"><strong style="color:#1C2620;display:inline-block;width:110px;">WhatsApp</strong> ${whatsapp || '—'}</td></tr>
-                      <tr><td style="padding:8px 0;font-size:14px;color:#5a6b5e;border-bottom:1px solid #E8E3DD;"><strong style="color:#1C2620;display:inline-block;width:110px;">Profissão</strong> ${profissao || '—'}</td></tr>
-                      <tr><td style="padding:8px 0;font-size:14px;color:#5a6b5e;"><strong style="color:#1C2620;display:inline-block;width:110px;">Conselho</strong> ${conselho || '—'}</td></tr>
-                    </table>
-                    <p style="margin:20px 0 0;font-size:12px;color:#aab8b2;">Cadastro recebido em ${timestamp}</p>
-                  </td>
-                </tr>
-              </table>
-            </td></tr>
-          </table>
-        </body>
-        </html>
-      `
-    })
-  ]);
-
-  // Log de falhas sem expor detalhes ao cliente
-  if (r1.status === 'rejected') console.error('[cadastro] email confirmacao falhou:', r1.reason);
-  if (r2.status === 'rejected') console.error('[cadastro] email interno falhou:', r2.reason);
+  // ── 2. Envio dos e-mails (mecanismo central — Fase 7) ────────────────────────
+  // enviarNotificacao nunca lança; ambos os e-mails (prescritor + interno)
+  // são sempre tentados via Promise.allSettled internamente.
+  const notificacao = await enviarNotificacao('cadastro_recebido', { nome, email, whatsapp, profissao, conselho });
+  const [emailPrescritorOk, emailInternoOk] = notificacao.resultados;
 
   // Se ambos falharam, retorna erro (mas registro já foi salvo no banco)
-  if (r1.status === 'rejected' && r2.status === 'rejected')
+  if (!emailPrescritorOk && !emailInternoOk)
     return res.status(500).json({ error: 'Erro ao enviar confirmação. Seu cadastro foi recebido.' });
 
   // ── 3. Atualizar email_enviado no banco ──────────────────────────────────────
-  emailEnviado = r1.status === 'fulfilled';
+  emailEnviado = emailPrescritorOk;
   try {
     await sql`
       UPDATE prescritores
