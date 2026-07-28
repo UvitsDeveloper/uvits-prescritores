@@ -2,7 +2,7 @@ const { sql }      = require('@vercel/postgres');
 const { autenticar } = require('./_auth');
 const { registrarUso } = require('./_usage');
 const { limitarDelete } = require('./_ratelimit');
-const { sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor } = require('./_shopifySync');
+const { sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor, desativarPrescritor, reativarPrescritor } = require('./_shopifySync');
 const { validarCpf } = require('./_cpf');
 
 module.exports = async function handler(req, res) {
@@ -93,7 +93,7 @@ module.exports = async function handler(req, res) {
 
     // Modelo de status vigente — ver comentário em scripts/schema.sql.
     const STATUS_VALIDOS = ['pendente', 'pendente_cpf', 'aprovado', 'ativo', 'reprovado', 'suspenso', 'inativo'];
-    const { status, notas, cpf, percentualIndicacao, valorMinimoIndicacao } = req.body || {};
+    const { status, notas, cpf, codigoIndicacao, percentualIndicacao, valorMinimoIndicacao } = req.body || {};
 
     if (status && !STATUS_VALIDOS.includes(status))
       return res.status(400).json({ error: 'Status inválido' });
@@ -134,13 +134,15 @@ module.exports = async function handler(req, res) {
           return res.status(400).json({ error: 'CPF obrigatório para aprovar.' });
       }
 
-      // Fase 5 (cupom de indicação): "ativo" só a partir de "aprovado", e só
-      // é persistido quando o Worker confirma sincronização completa nas
-      // duas plataformas (Shopify + Yampi) — seção 7 do documento de regras.
+      // Fase 5 (cupom de indicação) + Fase 6 (reativação): "ativo" a partir
+      // de "aprovado" cria o cupom do zero; a partir de "suspenso"/"inativo"
+      // reativa o cupom já existente (mesmo código, sem exigir os campos de
+      // ativação de novo). Só é persistido quando o Worker confirma
+      // sincronização completa nas duas plataformas.
       let ativacao;
-      if (novoStatus === 'ativo') {
-        if (atual.status !== 'aprovado')
-          return res.status(400).json({ error: 'Cadastro precisa estar aprovado antes de ativar.' });
+      if (novoStatus === 'ativo' && atual.status === 'aprovado') {
+        if (!codigoIndicacao || !String(codigoIndicacao).trim())
+          return res.status(400).json({ error: 'Código do cupom de indicação é obrigatório.' });
 
         const percent = percentualIndicacao !== undefined ? Number(percentualIndicacao) : 10;
         if (!Number.isFinite(percent) || percent < 1 || percent > 30)
@@ -150,8 +152,14 @@ module.exports = async function handler(req, res) {
         if (percent > 15 && (!Number.isFinite(minValue) || minValue < 79.99))
           return res.status(400).json({ error: 'Percentual acima de 15% exige valor mínimo de compra de pelo menos R$ 79,99.' });
 
-        ativacao = await ativarPrescritor({ shopifyCustomerId: atual.shopify_customer_id, percent, minValue });
+        ativacao = await ativarPrescritor({ shopifyCustomerId: atual.shopify_customer_id, code: codigoIndicacao, percent, minValue });
         if (!ativacao.ok) {
+          if (ativacao.status === 409) {
+            return res.status(409).json({ error: ativacao.mensagem || 'Este código de cupom já está em uso por outro prescritor.' });
+          }
+          if (ativacao.status === 400) {
+            return res.status(400).json({ error: ativacao.mensagem || 'Dados inválidos para ativação.' });
+          }
           console.error('[prescritores PATCH] falha ao chamar ativação:', ativacao.error);
           return res.status(502).json({ error: 'Não foi possível ativar o prescritor. Tente novamente.' });
         }
@@ -161,6 +169,29 @@ module.exports = async function handler(req, res) {
             syncStatus: ativacao.syncStatus,
             coupon: ativacao.coupon,
           });
+        }
+      } else if (novoStatus === 'ativo' && (atual.status === 'suspenso' || atual.status === 'inativo')) {
+        const reativacao = await reativarPrescritor({ shopifyCustomerId: atual.shopify_customer_id });
+        if (!reativacao.ok) {
+          if (reativacao.status === 400) {
+            return res.status(400).json({ error: reativacao.mensagem || 'Não é possível reativar — cupom de indicação anterior não encontrado.' });
+          }
+          console.error('[prescritores PATCH] falha ao reativar:', reativacao.error);
+          return res.status(502).json({ error: 'Não foi possível reativar o prescritor. Tente novamente.' });
+        }
+        ativacao = reativacao;
+      } else if (novoStatus === 'ativo') {
+        return res.status(400).json({ error: 'Cadastro precisa estar aprovado, suspenso ou inativo antes de ativar.' });
+      }
+
+      // Fase 6 (suspensão/inativação): remove a tag e desativa o cupom de
+      // indicação nas duas plataformas, só quando vem de "ativo" (se já
+      // estava suspenso/reprovado, não há nada ativo pra desligar de novo).
+      if ((novoStatus === 'suspenso' || novoStatus === 'inativo') && atual.status === 'ativo') {
+        const desativacao = await desativarPrescritor({ shopifyCustomerId: atual.shopify_customer_id });
+        if (!desativacao.ok) {
+          console.error('[prescritores PATCH] falha ao desativar:', desativacao.error);
+          return res.status(502).json({ error: 'Não foi possível suspender/inativar o prescritor. Tente novamente.' });
         }
       }
 

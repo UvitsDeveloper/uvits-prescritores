@@ -31,7 +31,7 @@ async function chamarWorker(path, body) {
 
     if (!response.ok) {
       const detalhe = data?.detail || data?.error || '';
-      return { ok: false, error: `Worker respondeu ${response.status}${detalhe ? ': ' + detalhe : ''}` };
+      return { ok: false, status: response.status, mensagem: data?.error, error: `Worker respondeu ${response.status}${detalhe ? ': ' + detalhe : ''}` };
     }
 
     return { ok: true, data };
@@ -63,8 +63,8 @@ async function confirmarCpfNaShopify({ shopifyCustomerId, cpf }) {
 // prescritor e cria o cupom de indicação nas duas plataformas. Só considera
 // "ativado" quando syncStatus === 'synced' — falha parcial não é um erro de
 // transporte (resultado.ok pode ser true mesmo sem ativar de fato).
-async function ativarPrescritor({ shopifyCustomerId, percent, minValue }) {
-  const resultado = await chamarWorker('/internal/shopify/activate-prescriber', { shopifyCustomerId, percent, minValue });
+async function ativarPrescritor({ shopifyCustomerId, code, percent, minValue }) {
+  const resultado = await chamarWorker('/internal/shopify/activate-prescriber', { shopifyCustomerId, code, percent, minValue });
   if (!resultado.ok) return resultado;
   return {
     ok: true,
@@ -74,4 +74,19 @@ async function ativarPrescritor({ shopifyCustomerId, percent, minValue }) {
   };
 }
 
-module.exports = { sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor };
+// Fase 6 (suspensão/inativação): remove a tag e desativa o cupom de
+// indicação nas duas plataformas. Idempotente do lado do Worker — se não
+// havia cupom, é um no-op.
+async function desativarPrescritor({ shopifyCustomerId }) {
+  return chamarWorker('/internal/shopify/deactivate-prescriber', { shopifyCustomerId });
+}
+
+// Fase 6 (reativação): reaplica a tag e reativa o MESMO cupom de indicação
+// (nunca cria um novo) — bloqueia se não houver cupom anterior completo.
+async function reativarPrescritor({ shopifyCustomerId }) {
+  const resultado = await chamarWorker('/internal/shopify/reactivate-prescriber', { shopifyCustomerId });
+  if (!resultado.ok) return resultado;
+  return { ok: true, activated: true, coupon: resultado.data?.coupon };
+}
+
+module.exports = { sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor, desativarPrescritor, reativarPrescritor };
