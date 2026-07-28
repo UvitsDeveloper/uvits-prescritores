@@ -94,6 +94,21 @@ module.exports = async function handler(req, res) {
 
     // Modelo de status vigente — ver comentário em scripts/schema.sql.
     const STATUS_VALIDOS = ['pendente', 'pendente_cpf', 'aprovado', 'ativo', 'reprovado', 'suspenso', 'inativo'];
+
+    // Máquina de estados (Fase 8) — mesma tabela espelhada no painel
+    // (admin.js) para esconder opções inválidas no <select>. Aqui é a
+    // trava de verdade: qualquer transição fora deste mapa é rejeitada,
+    // mesmo que alguém chame a API diretamente.
+    const TRANSICOES_VALIDAS = {
+      pendente: ['pendente_cpf', 'reprovado'],
+      pendente_cpf: ['aprovado', 'reprovado'],
+      aprovado: ['ativo'],
+      ativo: ['suspenso', 'inativo'],
+      suspenso: ['ativo', 'inativo'],
+      inativo: ['ativo'],
+      reprovado: ['inativo'],
+    };
+
     const { status, notas, cpf, codigoIndicacao, percentualIndicacao, valorMinimoIndicacao } = req.body || {};
 
     if (status && !STATUS_VALIDOS.includes(status))
@@ -110,6 +125,16 @@ module.exports = async function handler(req, res) {
       if (atualRows.length === 0)
         return res.status(404).json({ error: 'Cadastro não encontrado' });
       const atual = atualRows[0];
+
+      // Fase 8 (máquina de estados): valida a transição em si, antes de
+      // qualquer regra específica abaixo. Resalvar o mesmo status (ex.:
+      // editando só as notas) não passa por aqui.
+      if (novoStatus && novoStatus !== atual.status) {
+        const permitidas = TRANSICOES_VALIDAS[atual.status] || [];
+        if (!permitidas.includes(novoStatus)) {
+          return res.status(400).json({ error: `Transição de status inválida: não é possível ir de ${atual.status} para ${novoStatus}.` });
+        }
+      }
 
       // Fase 4 (CPF/metafield): desacoplado do status-alvo — permite "salvar
       // CPF sem aprovar" (admin confere os dados antes de decidir aprovar).
