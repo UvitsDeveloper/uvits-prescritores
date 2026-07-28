@@ -2,6 +2,7 @@ const { sql }      = require('@vercel/postgres');
 const { autenticar } = require('./_auth');
 const { registrarUso } = require('./_usage');
 const { limitarDelete } = require('./_ratelimit');
+const { sincronizarComShopify } = require('./_shopifySync');
 
 module.exports = async function handler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -114,7 +115,29 @@ module.exports = async function handler(req, res) {
       }
 
       const { rows } = await sql`SELECT * FROM prescritores WHERE id = ${id}`;
-      return res.status(200).json({ prescritor: rows[0] });
+      let prescritor = rows[0];
+      let shopifySync;
+
+      // Fase 3 (pré-cadastro Shopify): ao entrar em pendente_cpf, garante que
+      // existe um cliente Shopify vinculado. Best-effort — nunca falha a
+      // resposta principal; se der errado, shopify_customer_id continua NULL
+      // e a próxima vez que o status for salvo tenta de novo.
+      if (prescritor && prescritor.status === 'pendente_cpf' && !prescritor.shopify_customer_id) {
+        const sync = await sincronizarComShopify({ email: prescritor.email, nome: prescritor.nome });
+        shopifySync = { ok: sync.ok, error: sync.error };
+
+        if (sync.ok) {
+          const { rows: atualizado } = await sql`
+            UPDATE prescritores SET shopify_customer_id = ${sync.shopifyCustomerId} WHERE id = ${id}
+            RETURNING *
+          `;
+          prescritor = atualizado[0];
+        } else {
+          console.error('[prescritores PATCH] falha ao sincronizar com Shopify:', sync.error);
+        }
+      }
+
+      return res.status(200).json({ prescritor, shopifySync });
 
     } catch (err) {
       console.error('[prescritores PATCH] erro:', err);
