@@ -6,7 +6,9 @@ Contexto completo do projeto para o Claude Code. Leia este arquivo antes de qual
 
 ## O que é este projeto
 
-Landing page do programa **Uvits Pro Prescritor**, com formulário de cadastro, disparo automático de e-mails e painel administrativo. Desenvolvido para a **Uvits Vitaminas** (`uvits.com.br`), marca brasileira de vitaminas líquidas.
+Landing page do programa **Uvits Pro Prescritor**, com formulário de cadastro e disparo automático de e-mails. Desenvolvido para a **Uvits Vitaminas** (`uvits.com.br`), marca brasileira de vitaminas líquidas.
+
+O painel administrativo **não vive mais aqui** — a única interface de gestão dos cadastros é o app embedded na Shopify (repositório `uvits-portal-prescritores`), que chama a API deste projeto server-to-server via `PRESCRITORES_SERVICE_KEY`. Não há login direto neste repositório.
 
 ---
 
@@ -18,7 +20,7 @@ Landing page do programa **Uvits Pro Prescritor**, com formulário de cadastro, 
 | Backend | Node.js — Serverless Functions do Vercel |
 | Banco de dados | Neon Postgres (via `@vercel/postgres`) |
 | E-mail | Resend SDK v3 |
-| Autenticação | JWT (`jsonwebtoken`) + bcrypt (`bcryptjs`) |
+| Autenticação | Bearer token único (`PRESCRITORES_SERVICE_KEY`) — sem login direto, só o app embedded na Shopify chama a API |
 | Hospedagem | Vercel |
 
 ---
@@ -28,16 +30,13 @@ Landing page do programa **Uvits Pro Prescritor**, com formulário de cadastro, 
 ```
 prescritores/
 ├── api/
-│   ├── _auth.js          # Middleware JWT — reutilizado por todas as rotas protegidas
-│   ├── login.js          # POST /api/login — autenticação do painel admin
+│   ├── _auth.js          # Verifica o Bearer token (PRESCRITORES_SERVICE_KEY) — reutilizado por todas as rotas protegidas
 │   ├── cadastro.js       # POST /api/cadastro — recebe form, salva no banco, envia e-mails
-│   └── prescritores.js   # GET + PATCH /api/prescritores — listagem e atualização (protegido)
+│   └── prescritores.js   # GET + PATCH /api/prescritores — listagem e atualização (chamado pelo app embedded)
 ├── public/
-│   ├── index.html        # Landing page pública (página de cadastro)
-│   └── admin.html        # Painel administrativo (requer login JWT)
+│   └── index.html        # Landing page pública (página de cadastro) — único front-end deste repositório
 ├── scripts/
-│   ├── schema.sql        # DDL completo — tabelas, índices, trigger de timestamp
-│   └── hash-senha.js     # Script CLI para gerar hash bcrypt do usuário admin
+│   └── schema.sql        # DDL completo — tabelas, índices, trigger de timestamp
 ├── .env.example          # Modelo de variáveis de ambiente
 ├── package.json
 ├── vercel.json           # Rotas + headers de segurança HTTP
@@ -50,10 +49,7 @@ prescritores/
 
 ### Tabelas
 
-**`usuarios`** — usuários do painel administrativo
-- Cadastro feito diretamente no banco (não há tela de criação de usuários)
-- Senha armazenada como hash bcrypt com custo 12
-- Para criar um usuário: `node scripts/hash-senha.js` → copiar INSERT gerado → executar no Neon
+**`usuarios`** — legado do antigo login por e-mail+senha do painel administrativo, removido. A tabela **não foi apagada** (decisão de banco de dados fica fora do escopo de mudanças de interface), mas nenhum código deste projeto a consulta mais.
 
 **`prescritores`** — cadastros recebidos pelo formulário público
 - `status` com CHECK constraint: `aguardando_contato | contato_realizado | aprovado | reprovado`
@@ -76,7 +72,7 @@ prescritores/
 | `FROM_EMAIL` | ✅ | E-mail remetente (domínio verificado no Resend) |
 | `FROM_NAME` | Não | Nome do remetente (padrão: `Uvits Pro Prescritor`) |
 | `TO_EMAIL` | ✅ | E-mail que recebe aviso de novo cadastro |
-| `JWT_SECRET` | ✅ | String aleatória longa (mín. 64 chars) para assinar tokens |
+| `PRESCRITORES_SERVICE_KEY` | ✅ | Segredo compartilhado com o app embedded na Shopify — única forma de autenticação das rotas administrativas |
 | `ALLOWED_ORIGIN` | ✅ | Origem permitida no CORS (ex: `https://prescritores.uvits.com.br`) |
 | `POSTGRES_URL` | ✅ | Injetada automaticamente pelo Neon/Vercel |
 
@@ -113,24 +109,19 @@ Resposta ao frontend: { success: true }
 
 ---
 
-## Fluxo de autenticação do painel
+## Fluxo de autenticação das rotas administrativas
+
+Não existe login neste repositório. A única identidade administrativa do sistema é a conta do app embedded na Shopify (`uvits-portal-prescritores`), autenticada lá por token fixo ou sessão do Shopify Admin. Esse app chama a API deste projeto server-to-server:
 
 ```
-POST /api/login  { email, senha }
+App embedded (Shopify) → chama /api/prescritores
         │
         ▼
-Busca usuário no banco
-Compara senha com bcrypt.compare (timing-safe)
-Gera JWT com expiração de 8h
+Authorization: Bearer <PRESCRITORES_SERVICE_KEY>
         │
         ▼
-Frontend armazena token no localStorage
-Todas as requisições ao painel incluem:
-  Authorization: Bearer <token>
-        │
-        ▼
-api/_auth.js verifica e decodifica o JWT
-Retorna 401 se inválido ou expirado
+api/_auth.js compara o token em tempo constante
+Retorna 401 se não bater
 ```
 
 ---
@@ -144,20 +135,8 @@ Retorna 401 se inválido ou expirado
 | CORS | `ALLOWED_ORIGIN` via env — restrito ao domínio em produção |
 | Headers HTTP | `vercel.json`: `X-Frame-Options`, `X-Content-Type-Options`, `HSTS`, `Referrer-Policy`, `Permissions-Policy` |
 | Content-Type | API rejeita `415` se não for `application/json` |
-| Timing attack | Login sempre roda `bcrypt.compare` mesmo quando usuário não existe |
+| Timing attack | Comparação do `PRESCRITORES_SERVICE_KEY` sempre em tempo constante (`timingSafeEqual`) |
 | Duplo submit | Flag `enviando = true` no frontend previne resubmissão |
-| JWT | Expiração de 8h, secret via env, verificado em toda rota protegida |
-
----
-
-## Painel administrativo (`/admin.html`)
-
-- Login com e-mail + senha → JWT armazenado no `localStorage`
-- Listagem paginada (20 por página) com busca por nome/e-mail/profissão
-- Filtro por status via badges clicáveis
-- Modal de detalhes: edição de status e notas internas
-- Indicador visual de e-mail enviado (✓ / ✗)
-- Logout limpa o token do `localStorage`
 
 ---
 
@@ -167,8 +146,7 @@ Retorna 401 se inválido ou expirado
 - **CRM ou CRN** são obrigatórios no cadastro
 - **WhatsApp é obrigatório** — a equipe contata via WhatsApp após validação
 - O programa **não tem portal de login para prescritores** — o contato é feito manualmente pela equipe Uvits
-- Status do prescritor deve seguir a ordem lógica: `aguardando_contato → contato_realizado → aprovado | reprovado`
-- Usuários do painel são criados **exclusivamente via banco** — não há interface de criação
+- A gestão administrativa dos cadastros acontece **exclusivamente** pelo app embedded na Shopify (`uvits-portal-prescritores`) — este repositório não tem interface administrativa própria
 
 ---
 
@@ -181,7 +159,7 @@ cp .env.example .env
 vercel dev
 ```
 
-Acesse `http://localhost:3000` (landing) e `http://localhost:3000/admin.html` (painel).
+Acesse `http://localhost:3000` (landing). Para testar as rotas administrativas localmente, chame a API diretamente com `Authorization: Bearer <PRESCRITORES_SERVICE_KEY>` (não há tela própria neste repositório — use o app embedded ou `curl`).
 
 ---
 

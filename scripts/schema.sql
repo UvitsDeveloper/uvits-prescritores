@@ -4,7 +4,10 @@
 --  ou diretamente no painel: Storage → seu banco → Query
 -- ============================================================
 
--- Tabela de usuários do painel administrativo
+-- Tabela de usuários do antigo painel administrativo (login por e-mail+senha),
+-- removido — a única identidade administrativa hoje é o app embedded na
+-- Shopify. Mantida sem DROP por não ser uma decisão de interface; nenhum
+-- código deste projeto a consulta mais.
 CREATE TABLE IF NOT EXISTS usuarios (
   id         SERIAL PRIMARY KEY,
   nome       VARCHAR(120)        NOT NULL,
@@ -74,9 +77,3 @@ CREATE OR REPLACE TRIGGER trg_prescritores_atualizado_em
   BEFORE UPDATE ON prescritores
   FOR EACH ROW EXECUTE FUNCTION atualizar_timestamp();
 
--- ============================================================
---  INSERIR USUÁRIO ADMINISTRADOR
---  Substitua o hash abaixo pelo gerado via: node scripts/hash-senha.js
--- ============================================================
--- INSERT INTO usuarios (nome, email, senha_hash)
--- VALUES ('Sergio', 'contato@uvits.com.br', '$2a$12$HASH_GERADO_AQUI');

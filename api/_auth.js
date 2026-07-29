@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 const { timingSafeEqual } = require('crypto');
 
 /**
@@ -18,11 +17,11 @@ function compararSeguro(a, b) {
 }
 
 /**
- * Verifica o header Authorization. Aceita duas formas, nesta ordem:
- *   1. PRESCRITORES_SERVICE_KEY — chamada server-to-server do Worker
- *      (uvits-portal-prescritores), sem identidade de usuário.
- *   2. JWT — login por e-mail+senha do painel (fluxo original, intacto).
- * Retorna o "principal" autenticado ou responde com 401.
+ * Verifica o header Authorization. Única identidade administrativa hoje:
+ * o painel embedded (uvits-portal-prescritores) chamando via
+ * PRESCRITORES_SERVICE_KEY — não há mais login direto nesta aplicação
+ * (o antigo painel/login por e-mail+senha foi removido; a conta única
+ * de acesso ao sistema é a do app embedded na Shopify).
  */
 function autenticar(req, res) {
   const authHeader = req.headers['authorization'] || '';
@@ -38,13 +37,8 @@ function autenticar(req, res) {
     return { tipo: 'service', origem: 'uvits-portal-prescritores' };
   }
 
-  try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
-    return { tipo: 'usuario', ...payload };
-  } catch (err) {
-    res.status(401).json({ error: 'Token inválido ou expirado' });
-    return null;
-  }
+  res.status(401).json({ error: 'Token inválido ou expirado' });
+  return null;
 }
 
 module.exports = { autenticar };
