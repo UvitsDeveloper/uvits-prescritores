@@ -59,7 +59,8 @@ module.exports = async function handler(req, res) {
       // Registros da página
       const dataQuery = `
         SELECT id, nome, email, whatsapp, profissao, conselho,
-               email_enviado, status, shopify_customer_id, origem, notas, criado_em, atualizado_em
+               email_enviado, status, shopify_customer_id, origem, notas,
+               data_nascimento, endereco, brinde, criado_em, atualizado_em
         FROM prescritores
         ${where}
         ORDER BY criado_em DESC
@@ -109,7 +110,10 @@ module.exports = async function handler(req, res) {
       reprovado: ['inativo'],
     };
 
-    const { status, notas, cpf, codigoIndicacao, percentualIndicacao, valorMinimoIndicacao } = req.body || {};
+    const {
+      status, notas, cpf, codigoIndicacao, percentualIndicacao, valorMinimoIndicacao,
+      nome, email, whatsapp, profissao, conselho, dataNascimento, endereco, brinde,
+    } = req.body || {};
 
     if (status && !STATUS_VALIDOS.includes(status))
       return res.status(400).json({ error: 'Status inválido' });
@@ -134,6 +138,62 @@ module.exports = async function handler(req, res) {
         if (!permitidas.includes(novoStatus)) {
           return res.status(400).json({ error: `Transição de status inválida: não é possível ir de ${atual.status} para ${novoStatus}.` });
         }
+      }
+
+      // Campos de cadastro editáveis pelo admin — travados quando o
+      // prescritor já está "ativo" (regra de negócio: depois de ativado, só
+      // o cupom de indicação continua editável; o resto vira histórico
+      // estável). Validação primeiro, sempre antes de qualquer chamada
+      // externa (Shopify/Yampi) mais abaixo — se algo aqui for inválido,
+      // nada foi tocado ainda.
+      const camposCadastro = [nome, email, whatsapp, profissao, conselho, dataNascimento, endereco, brinde];
+      const editandoCadastro = camposCadastro.some((v) => v !== undefined);
+
+      if (editandoCadastro && atual.status === 'ativo') {
+        return res.status(400).json({ error: 'Não é possível editar os dados de cadastro enquanto o prescritor está ativo.' });
+      }
+
+      const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const PROFISSOES_VALIDAS = ['Médico(a)', 'Nutricionista'];
+      const atualizacoesCadastro = [];
+
+      if (nome !== undefined) {
+        const v = String(nome).trim();
+        if (!v) return res.status(400).json({ error: 'Nome não pode ficar vazio.' });
+        atualizacoesCadastro.push({ coluna: 'nome', valor: v.slice(0, 120) });
+      }
+      if (email !== undefined) {
+        const v = String(email).trim().toLowerCase();
+        if (v && !EMAIL_REGEX.test(v)) return res.status(400).json({ error: 'E-mail inválido.' });
+        atualizacoesCadastro.push({ coluna: 'email', valor: v || null });
+      }
+      if (whatsapp !== undefined) {
+        atualizacoesCadastro.push({ coluna: 'whatsapp', valor: String(whatsapp).trim().slice(0, 30) || null });
+      }
+      if (profissao !== undefined) {
+        const v = String(profissao).trim();
+        if (v && !PROFISSOES_VALIDAS.includes(v)) return res.status(400).json({ error: 'Profissão deve ser Médico(a) ou Nutricionista.' });
+        atualizacoesCadastro.push({ coluna: 'profissao', valor: v || null });
+      }
+      if (conselho !== undefined) {
+        atualizacoesCadastro.push({ coluna: 'conselho', valor: String(conselho).trim().toUpperCase().slice(0, 60) || null });
+      }
+      if (dataNascimento !== undefined) {
+        if (!dataNascimento) {
+          atualizacoesCadastro.push({ coluna: 'data_nascimento', valor: null });
+        } else {
+          const d = new Date(dataNascimento);
+          const ano = d.getFullYear();
+          if (isNaN(d.getTime()) || ano < 1900 || ano > new Date().getFullYear())
+            return res.status(400).json({ error: 'Data de nascimento inválida.' });
+          atualizacoesCadastro.push({ coluna: 'data_nascimento', valor: dataNascimento });
+        }
+      }
+      if (endereco !== undefined) {
+        atualizacoesCadastro.push({ coluna: 'endereco', valor: String(endereco).trim().slice(0, 2000) || null });
+      }
+      if (brinde !== undefined) {
+        atualizacoesCadastro.push({ coluna: 'brinde', valor: String(brinde).trim().slice(0, 200) || null });
       }
 
       // Fase 4 (CPF/metafield): desacoplado do status-alvo — permite "salvar
@@ -240,6 +300,26 @@ module.exports = async function handler(req, res) {
           SET notas = COALESCE(${novasNotas}, notas), cpf_confirmado = cpf_confirmado OR ${cpfConfirmadoNestaRequisicao}
           WHERE id = ${id}
         `;
+      }
+
+      // Campos de cadastro (nome/e-mail/WhatsApp/profissão/conselho/data de
+      // nascimento/endereço/brinde) — sempre sobrescreve com o que foi
+      // enviado (diferente do COALESCE usado pela migração em lote: aqui é
+      // uma edição deliberada e visível feita por um admin, não um upsert
+      // que preserva dado existente às cegas).
+      if (atualizacoesCadastro.length) {
+        const setClauses = atualizacoesCadastro.map((c, i) => `${c.coluna} = $${i + 1}`);
+        const valores = atualizacoesCadastro.map((c) => c.valor);
+        valores.push(id);
+        try {
+          await sql.query(`UPDATE prescritores SET ${setClauses.join(', ')} WHERE id = $${valores.length}`, valores);
+        } catch (err) {
+          if (err && err.code === '23505') {
+            const campo = String(err.detail || '').includes('email') ? 'e-mail' : 'registro do conselho (CRM/CRN)';
+            return res.status(409).json({ error: `Este ${campo} já está em uso por outro prescritor.` });
+          }
+          throw err;
+        }
       }
 
       const { rows } = await sql`SELECT * FROM prescritores WHERE id = ${id}`;

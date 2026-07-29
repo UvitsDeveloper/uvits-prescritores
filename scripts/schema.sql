@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS prescritores (
   data_nascimento       DATE,
   instagram             VARCHAR(150),
   endereco              TEXT,
-  dados_migracao        JSONB,         -- brinde/cupom/enviado legados + observações (histórico, não operacional)
+  brinde                VARCHAR(200),  -- campo editável real (ver migration-2026-07-29-brinde.sql); dados_migracao.brinde_legado é só o histórico congelado da migração
+  dados_migracao        JSONB,         -- cupom/enviado legados + observações (histórico, não operacional)
   criado_em             TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   atualizado_em         TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
