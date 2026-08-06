@@ -59,7 +59,7 @@ module.exports = async function handler(req, res) {
       // Registros da página
       const dataQuery = `
         SELECT id, nome, email, whatsapp, profissao, conselho,
-               email_enviado, status, shopify_customer_id, origem, notas,
+               email_enviado, status, shopify_customer_id, cpf_confirmado, origem, notas,
                data_nascimento, endereco, brinde, criado_em, atualizado_em
         FROM prescritores
         ${where}
@@ -352,19 +352,15 @@ module.exports = async function handler(req, res) {
       // editando só as notas).
       if (novoStatus && atual.status !== novoStatus) {
         try {
-          if (novoStatus === 'aprovado') {
-            await enviarNotificacao('aprovado', { nome: prescritor.nome, email: prescritor.email });
-          } else if (novoStatus === 'reprovado') {
+          if (novoStatus === 'reprovado') {
             await enviarNotificacao('reprovado', { nome: prescritor.nome, email: prescritor.email });
-          } else if (novoStatus === 'suspenso') {
-            await enviarNotificacao('suspenso', { nome: prescritor.nome, email: prescritor.email });
-          } else if (novoStatus === 'ativo' && ativacao?.coupon) {
-            const evento = atual.status === 'aprovado' ? 'ativado' : 'reativado';
-            await enviarNotificacao(evento, {
+          } else if (novoStatus === 'ativo' && atual.status === 'aprovado' && ativacao?.coupon) {
+            await enviarNotificacao('prescriber_activated', {
               nome: prescritor.nome,
               email: prescritor.email,
               codigoCupom: ativacao.coupon.code,
               percentualCupom: ativacao.coupon.percent,
+              contatoEmpresa: process.env.PRESCRIBER_SUPPORT_EMAIL || 'contato@uvits.com.br',
             });
           }
         } catch (err) {

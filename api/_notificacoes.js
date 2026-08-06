@@ -21,8 +21,8 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
-// Layout compartilhado pelos e-mails novos desta fase (aprovado/reprovado/
-// ativado/suspenso/reativado) — mesma linguagem visual do e-mail de cadastro
+// Layout compartilhado pelos e-mails transacionais do programa — mesma
+// linguagem visual do e-mail de cadastro
 // recebido (cabeçalho verde-escuro, destaque teal, fundo creme), mas como
 // função reaproveitável já que esse conteúdo é novo (sem comportamento
 // existente a preservar byte a byte).
@@ -177,25 +177,6 @@ const EVENTOS = {
     return [paraPrescritor, paraInterno];
   },
 
-  aprovado(dados) {
-    const nome = escapeHtml(dados.nome);
-    return {
-      para: dados.email,
-      subject: 'Seus dados foram aprovados — Uvits Pro Prescritor',
-      html: layoutPrescritor({
-        headerTitle: 'Dados aprovados!',
-        bodyHtml: `
-          <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
-          <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
-            Conferimos os seus dados profissionais e está tudo certo. Você já é parte do programa
-            <strong>Uvits Pro Prescritor</strong> — em breve avisamos por aqui quando o seu cadastro estiver
-            totalmente ativo, com o seu cupom de indicação pronto para compartilhar com os seus pacientes.
-          </p>
-        `,
-      }),
-    };
-  },
-
   reprovado(dados) {
     const nome = escapeHtml(dados.nome);
     return {
@@ -215,60 +196,56 @@ const EVENTOS = {
     };
   },
 
-  ativado(dados) {
+  prescriber_activated(dados) {
     const nome = escapeHtml(dados.nome);
+    const contato = escapeHtml(dados.contatoEmpresa || 'contato@uvits.com.br');
+    const codigo = dados.codigoCupom ? escapeHtml(dados.codigoCupom) : null;
+    const percentual = dados.percentualCupom ? escapeHtml(dados.percentualCupom) : null;
     return {
       para: dados.email,
-      subject: 'Cadastro ativado — seu cupom de indicação já está disponível',
+      subject: 'Seu cadastro como prescritor foi ativado',
       html: layoutPrescritor({
-        headerTitle: 'Você é Uvits Pro Prescritor!',
+        headerTitle: 'Cadastro ativado!',
         bodyHtml: `
           <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
           <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
-            Seu cadastro está ativo. Lembrando que você já tem <strong>25% de desconto pessoal</strong> em
-            qualquer compra sua na Uvits, aplicado automaticamente quando você estiver logado na hora de finalizar a compra.
+            Seu cadastro como prescritor foi ativado. A partir de agora, você já pode participar do programa
+            <strong>Uvits Pro Prescritor</strong>.
           </p>
-          ${couponBlockHtml(dados.codigoCupom, dados.percentualCupom)}
-        `,
-      }),
-    };
-  },
-
-  suspenso(dados) {
-    const nome = escapeHtml(dados.nome);
-    return {
-      para: dados.email,
-      subject: 'Seus benefícios foram temporariamente suspensos',
-      html: layoutPrescritor({
-        headerTitle: 'Benefícios suspensos',
-        bodyHtml: `
-          <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}.</p>
-          <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
-            Seus benefícios do programa <strong>Uvits Pro Prescritor</strong> foram pausados temporariamente,
-            incluindo o cupom de indicação. Se tiver dúvidas, entre em contato com a nossa equipe pelo e-mail
-            <a href="mailto:contato@uvits.com.br" style="color:#2EC4A5;">contato@uvits.com.br</a>.
+          ${codigo ? couponBlockHtml(codigo, percentual || '') : ''}
+          <p style="margin:0;font-size:13px;color:#5a6b5e;line-height:1.7;">
+            ${codigo ? 'Use e compartilhe esse código com seus pacientes nas compras feitas no site da Uvits.' : ''}
+            Em caso de dúvida, fale com a nossa equipe pelo e-mail
+            <a href="mailto:${contato}" style="color:#2EC4A5;">${contato}</a>.
           </p>
         `,
       }),
+      text: `Olá, ${dados.nome}! Seu cadastro como prescritor foi ativado.${dados.codigoCupom ? ` Seu código atual é ${dados.codigoCupom}. Use e compartilhe esse código com seus pacientes nas compras no site da Uvits.` : ''} Em caso de dúvida, entre em contato pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'}.`,
     };
   },
 
-  reativado(dados) {
+  prescriber_code_changed(dados) {
     const nome = escapeHtml(dados.nome);
+    const codigo = escapeHtml(dados.codigoCupom);
+    const contato = escapeHtml(dados.contatoEmpresa || 'contato@uvits.com.br');
     return {
       para: dados.email,
-      subject: 'Seus benefícios foram reativados!',
+      subject: 'Seu código de prescritor foi alterado',
       html: layoutPrescritor({
-        headerTitle: 'Benefícios reativados',
+        headerTitle: 'Código atualizado',
         bodyHtml: `
           <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
           <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
-            Seus benefícios do programa <strong>Uvits Pro Prescritor</strong> foram reativados — o seu cupom de
-            indicação já está funcionando de novo.
+            Seu código de prescritor foi alterado. A partir de agora, utilize e compartilhe o novo código abaixo.
           </p>
-          ${couponBlockHtml(dados.codigoCupom, dados.percentualCupom)}
+          ${couponBlockHtml(codigo, dados.percentualCupom || '')}
+          <p style="margin:0;font-size:13px;color:#8B3030;line-height:1.7;">
+            <strong>Se você não solicitou essa alteração, entre em contato com a nossa equipe para verificarmos o ocorrido.</strong>
+            Fale conosco pelo e-mail <a href="mailto:${contato}" style="color:#2EC4A5;">${contato}</a>.
+          </p>
         `,
       }),
+      text: `Olá, ${dados.nome}! Seu código de prescritor foi alterado para ${dados.codigoCupom}. A partir de agora, utilize e compartilhe esse novo código. Se você não solicitou essa alteração, entre em contato com a nossa equipe para verificarmos o ocorrido pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'}.`,
     };
   },
 
@@ -333,16 +310,24 @@ async function enviarNotificacao(evento, dados) {
   const lista = Array.isArray(mensagens) ? mensagens : [mensagens];
 
   const settled = await Promise.allSettled(
-    lista.map((m) => resend.emails.send({ from: `${FROM_NAME} <${FROM_EMAIL}>`, to: m.para, subject: m.subject, html: m.html })),
+    lista.map((m) => resend.emails.send({
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: m.para,
+      subject: m.subject,
+      html: m.html,
+      text: m.text,
+    })),
   );
 
   settled.forEach((r, i) => {
     if (r.status === 'rejected') {
       console.error(`[notificacoes] evento=${evento} mensagem=${i} falhou:`, r.reason);
+    } else if (r.value?.error) {
+      console.error(`[notificacoes] evento=${evento} mensagem=${i} rejeitada pelo provedor`);
     }
   });
 
-  const resultados = settled.map((r) => r.status === 'fulfilled');
+  const resultados = settled.map((r) => r.status === 'fulfilled' && !r.value?.error);
   return { ok: resultados.some(Boolean), resultados };
 }
 

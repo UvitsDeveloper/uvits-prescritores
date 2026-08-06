@@ -53,6 +53,21 @@ async function sincronizarComShopify({ email, nome }) {
   return { ok: true, shopifyCustomerId: resultado.data.shopifyCustomerId };
 }
 
+// Cadastro completo: a Shopify é a fonte de verdade do perfil. Esta função
+// só encaminha o formulário ao Worker autenticado, sem persistir dados aqui.
+async function criarOuVincularPrescritor(dados) {
+  const resultado = await chamarWorker('/internal/shopify/prescriber-registration', dados);
+  if (!resultado.ok) return resultado;
+  if (!resultado.data?.shopifyCustomerId) {
+    return { ok: false, error: 'Resposta do Worker sem shopifyCustomerId' };
+  }
+  return {
+    ok: true,
+    shopifyCustomerId: resultado.data.shopifyCustomerId,
+    created: !!resultado.data.created,
+  };
+}
+
 // Fase 4 (CPF/metafield): grava o CPF no cliente Shopify já vinculado. Nunca
 // loga o valor recebido — nem em sucesso, nem em erro.
 async function confirmarCpfNaShopify({ shopifyCustomerId, cpf }) {
@@ -89,4 +104,4 @@ async function reativarPrescritor({ shopifyCustomerId }) {
   return { ok: true, activated: true, coupon: resultado.data?.coupon };
 }
 
-module.exports = { sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor, desativarPrescritor, reativarPrescritor };
+module.exports = { criarOuVincularPrescritor, sincronizarComShopify, confirmarCpfNaShopify, ativarPrescritor, desativarPrescritor, reativarPrescritor };
