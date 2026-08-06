@@ -12,6 +12,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.FROM_EMAIL || 'contato@uvits.com.br';
 const FROM_NAME  = process.env.FROM_NAME  || 'Uvits Pro Prescritor';
 const TO_EMAIL   = process.env.TO_EMAIL   || 'contato@uvits.com.br';
+const SUPPORT_WHATSAPP_PHONE = '5519998566115';
+const SUPPORT_WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${SUPPORT_WHATSAPP_PHONE}&text=Preciso+de+Ajuda&type=phone_number&app_absent=0`;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -48,6 +50,9 @@ function layoutPrescritor({ headerTitle, bodyHtml }) {
             </tr>
             <tr>
               <td style="background:#F5F1EC;padding:20px 40px;border-top:1px solid #E8E3DD;text-align:center;">
+                <p style="margin:0 0 12px;font-size:12px;color:#5a6b5e;line-height:1.6;">
+                  Precisa de ajuda? <a href="${SUPPORT_WHATSAPP_URL}" style="color:#16856f;font-weight:700;text-decoration:none;">Fale com a Uvits pelo WhatsApp: (19) 99856-6115</a>
+                </p>
                 <p style="margin:0;font-size:11px;color:#aab8b2;line-height:1.6;">
                   🔒 Dados protegidos pela LGPD · Nenhuma informação compartilhada com terceiros<br>
                   Uvits Vitaminas · uvits.com.br
@@ -118,6 +123,9 @@ const EVENTOS = {
                     </table>
                     <a href="https://uvits.com.br" style="display:inline-block;background:#2EC4A5;color:#fff;font-size:13px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:8px;">
                       Visitar uvits.com.br →
+                    </a>
+                    <a href="${SUPPORT_WHATSAPP_URL}" style="display:inline-block;color:#16856f;font-size:13px;font-weight:700;padding:12px 0;margin:8px 0 0 16px;text-decoration:none;">
+                      Preciso de Ajuda pelo WhatsApp
                     </a>
                   </td>
                 </tr>
@@ -220,7 +228,7 @@ const EVENTOS = {
           </p>
         `,
       }),
-      text: `Olá, ${dados.nome}! Seu cadastro como prescritor foi ativado.${dados.codigoCupom ? ` Seu código atual é ${dados.codigoCupom}. Use e compartilhe esse código com seus pacientes nas compras no site da Uvits.` : ''} Em caso de dúvida, entre em contato pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'}.`,
+      text: `Olá, ${dados.nome}! Seu cadastro como prescritor foi ativado.${dados.codigoCupom ? ` Seu código atual é ${dados.codigoCupom}. Use e compartilhe esse código com seus pacientes nas compras no site da Uvits.` : ''} Em caso de dúvida, entre em contato pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
     };
   },
 
@@ -245,7 +253,7 @@ const EVENTOS = {
           </p>
         `,
       }),
-      text: `Olá, ${dados.nome}! Seu código de prescritor foi alterado para ${dados.codigoCupom}. A partir de agora, utilize e compartilhe esse novo código. Se você não solicitou essa alteração, entre em contato com a nossa equipe para verificarmos o ocorrido pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'}.`,
+      text: `Olá, ${dados.nome}! Seu código de prescritor foi alterado para ${dados.codigoCupom}. A partir de agora, utilize e compartilhe esse novo código. Se você não solicitou essa alteração, entre em contato com a nossa equipe pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
     };
   },
 
@@ -331,4 +339,4 @@ async function enviarNotificacao(evento, dados) {
   return { ok: resultados.some(Boolean), resultados };
 }
 
-module.exports = { enviarNotificacao, EVENTOS };
+module.exports = { enviarNotificacao, EVENTOS, SUPPORT_WHATSAPP_URL };

@@ -4,6 +4,7 @@
 
 - `v2.0.0`: baseline anterior a integracao ampliada com o Portal Shopify.
 - `v2.1.0`: cadastro publico como ponte da Shopify e notificacoes transacionais atualizadas.
+- `v2.1.1`: contato de suporte pelo WhatsApp nas mensagens e no site publico.
 
 ## Publicar uma versao
 
