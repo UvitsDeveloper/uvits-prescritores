@@ -93,7 +93,7 @@ module.exports = async function handler(req, res) {
     if (!id || isNaN(id))
       return res.status(400).json({ error: 'ID inválido' });
 
-    // Modelo de status vigente — ver comentário em scripts/schema.sql.
+    // Modelo de status legado — ver comentario em database/schema.sql.
     const STATUS_VALIDOS = ['pendente', 'pendente_cpf', 'aprovado', 'ativo', 'reprovado', 'suspenso', 'inativo'];
 
     // Máquina de estados (Fase 8) — mesma tabela espelhada no painel

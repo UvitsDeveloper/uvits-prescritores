@@ -3,6 +3,17 @@
 Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [2.1.3] - 2026-08-06
+
+### Alterado
+
+- Guias operacionais centralizados em `docs/operations/`.
+- Arquitetura atual e inventario de arquivos documentados separadamente.
+- Schema e migracoes historicas agrupados em `database/`.
+- Script de migracao legado movido para `scripts/migrations/`, com caminhos internos corrigidos.
+- Contexto antigo arquivado e marcado explicitamente como nao vigente.
+- `README.md` reescrito para distinguir site publico, Worker, Shopify e legado Postgres.
+
 ## [2.1.2] - 2026-08-06
 
 ### Alterado
@@ -42,6 +53,7 @@ Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 - Marco de restauracao anterior a integracao ampliada com o Portal e as notificacoes
   transacionais desta release.
 
+[2.1.3]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.0.0...v2.1.0

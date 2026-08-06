@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 -- aprovação (ver api/prescritores.js, PATCH).
 -- email é opcional (VARCHAR sem NOT NULL): registros vindos de migração de
 -- dados legados podem não ter e-mail ainda — ver
--- migration-2026-07-29-dados-legados.sql. O formulário público
+-- database/migrations/2026-07-29-dados-legados.sql. O formulário público
 -- (api/cadastro.js) sempre exige e-mail antes de inserir, então esse
 -- relaxamento não afeta o fluxo normal de cadastro.
 CREATE TABLE IF NOT EXISTS prescritores (
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS prescritores (
   data_nascimento       DATE,
   instagram             VARCHAR(150),
   endereco              TEXT,
-  brinde                VARCHAR(200),  -- campo editável real (ver migration-2026-07-29-brinde.sql); dados_migracao.brinde_legado é só o histórico congelado da migração
+  brinde                VARCHAR(200),  -- campo editável real (ver database/migrations/2026-07-29-brinde.sql); dados_migracao.brinde_legado é só o histórico congelado da migração
   dados_migracao        JSONB,         -- cupom/enviado legados + observações (histórico, não operacional)
   criado_em             TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   atualizado_em         TIMESTAMPTZ   NOT NULL DEFAULT NOW()
@@ -92,4 +92,3 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER trg_prescritores_atualizado_em
   BEFORE UPDATE ON prescritores
   FOR EACH ROW EXECUTE FUNCTION atualizar_timestamp();
-

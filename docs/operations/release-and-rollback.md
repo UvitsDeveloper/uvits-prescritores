@@ -6,6 +6,7 @@
 - `v2.1.0`: cadastro publico como ponte da Shopify e notificacoes transacionais atualizadas.
 - `v2.1.1`: contato de suporte pelo WhatsApp nas mensagens e no site publico.
 - `v2.1.2`: mensagem do WhatsApp identifica explicitamente o prescritor.
+- `v2.1.3`: reorganizacao de documentacao, banco legado e scripts auxiliares.
 
 ## Publicar uma versao
 

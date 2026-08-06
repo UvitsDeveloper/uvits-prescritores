@@ -1,3 +1,9 @@
+# Arquivo historico — contexto antigo do projeto
+
+> Este documento descreve uma fase anterior e contem fluxos e regras que podem
+> estar desatualizados. Use `README.md` e `docs/architecture.md` como fontes de
+> verdade. O arquivo foi preservado apenas para consulta historica.
+
 # CLAUDE.md — Uvits Prescritores
 
 Contexto completo do projeto para o Claude Code. Leia este arquivo antes de qualquer tarefa.

@@ -1,5 +1,9 @@
 # 🚀 Como atualizar o Uvits Pro Prescritor — passo a passo
 
+> Este guia cobre apenas o site publico e as funcoes da Vercel. O painel e a
+> fonte de verdade cadastral ficam no repositorio `uvits-portal-prescritores`.
+> O dominio de producao deste projeto e `https://prescritores.uvits.com.br`.
+
 Guia prático para publicar as mudanças (Redis, rate limit, monitor de uso, segurança)
 e deixar tudo funcionando na Vercel.
 

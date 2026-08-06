@@ -1,11 +1,11 @@
 // Migração única dos prescritores recrutados via chat antes do sistema
 // existir (planilha "Nutricionistas e Médicos", aba "Importação Uvits").
-// Ver scripts/migration-2026-07-29-dados-legados.sql pra mudança de schema
+// Ver database/migrations/2026-07-29-dados-legados.sql para a mudança de schema
 // necessária antes de rodar com --commit.
 //
 // Uso:
-//   MIGRATION_DATA_FILE=/caminho/dados.json node scripts/migrar-planilha-legada.js
-//   MIGRATION_DATA_FILE=/caminho/dados.json node scripts/migrar-planilha-legada.js --commit
+//   MIGRATION_DATA_FILE=/caminho/dados.json node scripts/migrations/migrateLegacySpreadsheet.js
+//   MIGRATION_DATA_FILE=/caminho/dados.json node scripts/migrations/migrateLegacySpreadsheet.js --commit
 //
 // Sem --commit roda em modo dry-run (padrão, seguro): só leitura, nenhuma
 // escrita em Postgres ou Shopify. O arquivo de dados nunca deve ficar dentro
@@ -24,7 +24,7 @@ const path = require('path');
 (function carregarEnvLocal() {
   const candidatos = ['.env.production.local', '.env.local'];
   for (const nome of candidatos) {
-    const envPath = path.join(__dirname, '..', nome);
+    const envPath = path.join(__dirname, '..', '..', nome);
     if (fs.existsSync(envPath)) carregarArquivoEnv(envPath);
   }
 })();
@@ -49,8 +49,8 @@ function carregarArquivoEnv(envPath) {
 }
 
 const { sql } = require('@vercel/postgres');
-const { validarCpf } = require('../api/_cpf');
-const { sincronizarComShopify, confirmarCpfNaShopify } = require('../api/_shopifySync');
+const { validarCpf } = require('../../api/_cpf');
+const { sincronizarComShopify, confirmarCpfNaShopify } = require('../../api/_shopifySync');
 
 const COMMIT = process.argv.includes('--commit');
 const DATA_FILE = process.env.MIGRATION_DATA_FILE;
@@ -162,7 +162,7 @@ function normalizarRegistro(raw) {
 // ── Busca de existente: ID legado → e-mail → conselho ──────────────────────
 // (conselho é só proteção extra contra a constraint única do banco; nunca
 // substitui a ordem pedida — CPF não é chave de busca porque não é
-// armazenado no Postgres, ver CLAUDE.md.)
+// armazenado no Postgres; ver docs/architecture.md.)
 async function buscarExistente(registro) {
   if (registro.idLegado) {
     const { rows } = await sql`SELECT * FROM prescritores WHERE id_legado = ${registro.idLegado} LIMIT 1`;
