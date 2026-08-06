@@ -13,7 +13,7 @@ const FROM_EMAIL = process.env.FROM_EMAIL || 'contato@uvits.com.br';
 const FROM_NAME  = process.env.FROM_NAME  || 'Uvits Pro Prescritor';
 const TO_EMAIL   = process.env.TO_EMAIL   || 'contato@uvits.com.br';
 const SUPPORT_WHATSAPP_PHONE = '5519998566115';
-const SUPPORT_WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${SUPPORT_WHATSAPP_PHONE}&text=Preciso+de+Ajuda&type=phone_number&app_absent=0`;
+const SUPPORT_WHATSAPP_URL = `https://api.whatsapp.com/send/?phone=${SUPPORT_WHATSAPP_PHONE}&text=Sou+prescritor+e+preciso+de+ajuda&type=phone_number&app_absent=0`;
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -125,7 +125,7 @@ const EVENTOS = {
                       Visitar uvits.com.br →
                     </a>
                     <a href="${SUPPORT_WHATSAPP_URL}" style="display:inline-block;color:#16856f;font-size:13px;font-weight:700;padding:12px 0;margin:8px 0 0 16px;text-decoration:none;">
-                      Preciso de Ajuda pelo WhatsApp
+                      Falar como prescritor pelo WhatsApp
                     </a>
                   </td>
                 </tr>

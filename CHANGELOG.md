@@ -3,6 +3,13 @@
 Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [2.1.2] - 2026-08-06
+
+### Alterado
+
+- A mensagem pre-preenchida do WhatsApp agora e `Sou prescritor e preciso de ajuda`,
+  permitindo diferenciar o atendimento do programa de prescritores do suporte a clientes.
+
 ## [2.1.1] - 2026-08-06
 
 ### Adicionado
@@ -35,6 +42,7 @@ Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 - Marco de restauracao anterior a integracao ampliada com o Portal e as notificacoes
   transacionais desta release.
 
+[2.1.2]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/UvitsDeveloper/uvits-prescritores/releases/tag/v2.0.0
