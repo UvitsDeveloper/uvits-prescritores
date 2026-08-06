@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0 - 2026-08-06
+
+- Adiciona opção explícita de autorização para mensagens operacionais via
+  WhatsApp no cadastro público; a escolha segue para o metacampo Shopify.
+
 Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 

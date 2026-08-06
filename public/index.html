@@ -578,6 +578,12 @@
               <label for="conselho" id="conselho-label">Nº do conselho *</label>
               <input type="text" id="conselho" placeholder="Selecione sua profissão primeiro" required disabled>
             </div>
+            <div class="field">
+              <label for="whatsapp-consent" style="display:flex;gap:10px;align-items:flex-start;font-weight:500;line-height:1.4">
+                <input type="checkbox" id="whatsapp-consent" style="width:auto;margin-top:3px">
+                Autorizo receber pelo WhatsApp mensagens operacionais sobre meu cadastro e meu código de prescritor.
+              </label>
+            </div>
             <button class="btn-submit" id="btn-submit" onclick="enviarFormulario()">
               Quero me cadastrar →
             </button>
@@ -754,7 +760,7 @@
         const res = await fetch('/api/cadastro', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome, email, whatsapp, profissao, conselho })
+          body: JSON.stringify({ nome, email, whatsapp, whatsappConsent: document.getElementById('whatsapp-consent').checked, profissao, conselho })
         });
 
         const data = await res.json();

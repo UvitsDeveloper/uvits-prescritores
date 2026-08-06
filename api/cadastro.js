@@ -52,13 +52,14 @@ module.exports = async function handler(req, res) {
   const nome = sanitize(req.body?.nome, 120);
   const email = sanitize(req.body?.email, 254).toLowerCase();
   const whatsapp = sanitize(req.body?.whatsapp, 30);
+  const whatsappConsent = req.body?.whatsappConsent === true;
   const profissao = sanitize(req.body?.profissao, 60);
   const conselho = sanitize(req.body?.conselho, 60).toUpperCase();
   const erros = validar({ nome, email, whatsapp, profissao, conselho });
   if (erros.length) return res.status(400).json({ error: erros.join(' ') });
 
   const sincronizacao = await criarOuVincularPrescritor({
-    nome, email, whatsapp, profissao, conselho, origem: 'formulario', status: 'pendente',
+    nome, email, whatsapp, whatsappConsent, profissao, conselho, origem: 'formulario', status: 'pendente',
   });
   if (!sincronizacao.ok) {
     console.error('[cadastro] falha ao criar/vincular prescritor na Shopify:', sincronizacao.error);
