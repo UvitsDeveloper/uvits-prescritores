@@ -83,6 +83,25 @@ function couponBlockHtml(codigoCupom, percentualCupom) {
   `;
 }
 
+function couponChangeBlockHtml(codigoAnterior, codigoAtual, percentualCupom) {
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:20px 0;border-collapse:separate;border-spacing:0;">
+      <tr>
+        <td width="44%" style="background:#F5F1EC;border:1px solid #E8E3DD;border-radius:10px;padding:16px;text-align:center;">
+          <p style="margin:0 0 7px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7B8580;">Código anterior</p>
+          <p style="margin:0;font-size:20px;font-weight:800;color:#69736E;letter-spacing:1px;text-decoration:line-through;">${escapeHtml(codigoAnterior)}</p>
+        </td>
+        <td width="12%" style="padding:0 8px;text-align:center;font-size:20px;font-weight:700;color:#16856F;">→</td>
+        <td width="44%" style="background:#EAF8F4;border:1px solid #9EDCCA;border-radius:10px;padding:16px;text-align:center;">
+          <p style="margin:0 0 7px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#16856F;">Novo código</p>
+          <p style="margin:0 0 4px;font-size:20px;font-weight:900;color:#1C2620;letter-spacing:1px;">${escapeHtml(codigoAtual)}</p>
+          <p style="margin:0;font-size:12px;color:#5A6B5E;">${escapeHtml(percentualCupom)}% de desconto</p>
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
 function mensagemAtivacao(dados, reativacao = false) {
   const nome = escapeHtml(dados.nome);
   const contato = escapeHtml(dados.contatoEmpresa || 'contato@uvits.com.br');
@@ -249,7 +268,8 @@ const EVENTOS = {
 
   prescriber_code_changed(dados) {
     const nome = escapeHtml(dados.nome);
-    const codigo = escapeHtml(dados.codigoCupom);
+    const codigoAnterior = String(dados.codigoCupomAnterior || 'Não informado');
+    const codigo = String(dados.codigoCupom || '');
     const contato = escapeHtml(dados.contatoEmpresa || 'contato@uvits.com.br');
     const requerReativacao = dados.requerReativacao === true;
     const orientacaoHtml = requerReativacao
@@ -268,14 +288,14 @@ const EVENTOS = {
           <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
             Seu código de prescritor foi alterado. ${orientacaoHtml}
           </p>
-          ${couponBlockHtml(codigo, dados.percentualCupom || '')}
+          ${couponChangeBlockHtml(codigoAnterior, codigo, dados.percentualCupom || '')}
           <p style="margin:0;font-size:13px;color:#8B3030;line-height:1.7;">
             <strong>Se você não solicitou essa alteração, entre em contato com a nossa equipe para verificarmos o ocorrido.</strong>
             Fale conosco pelo e-mail <a href="mailto:${contato}" style="color:#2EC4A5;">${contato}</a>.
           </p>
         `,
       }),
-      text: `Olá, ${dados.nome}! Seu código de prescritor foi alterado para ${dados.codigoCupom}.${orientacaoTexto} Se você não solicitou essa alteração, entre em contato com a nossa equipe pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
+      text: `Olá, ${dados.nome}! Seu código de prescritor foi alterado. Código anterior: ${dados.codigoCupomAnterior || 'não informado'}. Novo código: ${dados.codigoCupom}.${orientacaoTexto} Se você não solicitou essa alteração, entre em contato com a nossa equipe pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
     };
   },
 

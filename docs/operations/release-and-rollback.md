@@ -9,6 +9,7 @@
 - `v2.1.3`: reorganizacao de documentacao, banco legado e scripts auxiliares.
 - `v2.1.4`: e-mail transacional especifico para reativacao de prescritores.
 - `v2.1.5`: orientacao correta no e-mail de cupom alterado antes da reativacao.
+- `v2.1.6`: comparacao visual entre os codigos anterior e atual no e-mail.
 
 ## Publicar uma versao
 

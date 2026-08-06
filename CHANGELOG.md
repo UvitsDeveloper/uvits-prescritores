@@ -3,6 +3,14 @@
 Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [2.1.6] - 2026-08-06
+
+### Alterado
+
+- Criado um bloco visual exclusivo para alteracao de cupom, comparando o codigo anterior
+  com o novo codigo.
+- A versao em texto simples do e-mail tambem apresenta explicitamente os dois valores.
+
 ## [2.1.5] - 2026-08-06
 
 ### Corrigido
@@ -69,6 +77,7 @@ Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 - Marco de restauracao anterior a integracao ampliada com o Portal e as notificacoes
   transacionais desta release.
 
+[2.1.6]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.5...v2.1.6
 [2.1.5]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.4...v2.1.5
 [2.1.4]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.2...v2.1.3
