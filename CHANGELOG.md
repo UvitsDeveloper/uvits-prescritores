@@ -3,6 +3,14 @@
 Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [2.1.5] - 2026-08-06
+
+### Corrigido
+
+- O e-mail de alteracao do cupom adapta a orientacao ao estado do prescritor.
+- Para prescritores suspensos ou inativos, a mensagem deixa claro que o novo cupom somente
+  podera ser usado depois da reativacao.
+
 ## [2.1.4] - 2026-08-06
 
 ### Corrigido
@@ -61,6 +69,7 @@ Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 - Marco de restauracao anterior a integracao ampliada com o Portal e as notificacoes
   transacionais desta release.
 
+[2.1.5]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.4...v2.1.5
 [2.1.4]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.1...v2.1.2

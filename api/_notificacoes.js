@@ -251,6 +251,13 @@ const EVENTOS = {
     const nome = escapeHtml(dados.nome);
     const codigo = escapeHtml(dados.codigoCupom);
     const contato = escapeHtml(dados.contatoEmpresa || 'contato@uvits.com.br');
+    const requerReativacao = dados.requerReativacao === true;
+    const orientacaoHtml = requerReativacao
+      ? 'Para que ele volte a funcionar e possa ser compartilhado, o seu cadastro ainda precisa ser reativado.'
+      : 'A partir de agora, utilize e compartilhe o novo código abaixo.';
+    const orientacaoTexto = requerReativacao
+      ? ' Para que ele volte a funcionar e possa ser compartilhado, o seu cadastro ainda precisa ser reativado.'
+      : ' A partir de agora, utilize e compartilhe esse novo código.';
     return {
       para: dados.email,
       subject: 'Seu código de prescritor foi alterado',
@@ -259,7 +266,7 @@ const EVENTOS = {
         bodyHtml: `
           <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
           <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
-            Seu código de prescritor foi alterado. A partir de agora, utilize e compartilhe o novo código abaixo.
+            Seu código de prescritor foi alterado. ${orientacaoHtml}
           </p>
           ${couponBlockHtml(codigo, dados.percentualCupom || '')}
           <p style="margin:0;font-size:13px;color:#8B3030;line-height:1.7;">
@@ -268,7 +275,7 @@ const EVENTOS = {
           </p>
         `,
       }),
-      text: `Olá, ${dados.nome}! Seu código de prescritor foi alterado para ${dados.codigoCupom}. A partir de agora, utilize e compartilhe esse novo código. Se você não solicitou essa alteração, entre em contato com a nossa equipe pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
+      text: `Olá, ${dados.nome}! Seu código de prescritor foi alterado para ${dados.codigoCupom}.${orientacaoTexto} Se você não solicitou essa alteração, entre em contato com a nossa equipe pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
     };
   },
 
