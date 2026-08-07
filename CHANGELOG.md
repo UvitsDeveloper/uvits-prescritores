@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.1 - 2026-08-07
+
+- Define `status@api.alert.uvits.com.br` como remetente padrão dos e-mails
+  transacionais de prescritores enviados pelo Resend.
+
 ## 2.2.0 - 2026-08-06
 
 - Adiciona opção explícita de autorização para mensagens operacionais via

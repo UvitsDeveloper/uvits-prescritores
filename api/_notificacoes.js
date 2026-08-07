@@ -9,7 +9,10 @@ const { Resend } = require('resend');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'contato@uvits.com.br';
+// Remetente transacional verificado no Resend. A variável continua permitindo
+// override por ambiente, mas o fallback impede que homologação/local volte ao
+// endereço de contato comercial por engano.
+const FROM_EMAIL = process.env.FROM_EMAIL || 'status@api.alert.uvits.com.br';
 const FROM_NAME  = process.env.FROM_NAME  || 'Uvits Pro Prescritor';
 const TO_EMAIL   = process.env.TO_EMAIL   || 'contato@uvits.com.br';
 const SUPPORT_WHATSAPP_PHONE = '5519998566115';
