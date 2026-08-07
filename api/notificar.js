@@ -1,10 +1,10 @@
 // POST /api/notificar — chamado server-to-server pelo Worker
 // uvits-portal-prescritores (nunca pelo navegador), autenticado pela mesma
 // PRESCRITORES_SERVICE_KEY já usada pela aba "Cadastros" do painel unificado
-// (ver api/_auth.js). Hoje só o Worker chama isso (evento
-// cupom_indicacao_reposicao, Fase 5) — os demais eventos do programa (Fase 7)
-// são disparados diretamente por api/prescritores.js e api/cadastro.js, sem
-// passar por HTTP, já que rodam no mesmo processo.
+// (ver api/_auth.js). O Worker usa este endpoint para notificações da outbox,
+// incluindo ativação, reativação, alteração de cupom e alertas operacionais.
+// Eventos originados neste próprio projeto continuam chamando
+// api/_notificacoes.js diretamente, sem uma requisição HTTP adicional.
 
 const { autenticar } = require('./_auth');
 const { enviarNotificacao } = require('./_notificacoes');

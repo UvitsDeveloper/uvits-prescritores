@@ -83,6 +83,41 @@ function couponBlockHtml(codigoCupom, percentualCupom) {
   `;
 }
 
+function mensagemAtivacao(dados, reativacao = false) {
+  const nome = escapeHtml(dados.nome);
+  const contato = escapeHtml(dados.contatoEmpresa || 'contato@uvits.com.br');
+  const codigo = dados.codigoCupom ? escapeHtml(dados.codigoCupom) : null;
+  const percentual = dados.percentualCupom ? escapeHtml(dados.percentualCupom) : null;
+  const acao = reativacao ? 'reativado' : 'ativado';
+  const complemento = reativacao
+    ? 'Seu benefício e o seu cupom voltaram a ficar disponíveis.'
+    : 'A partir de agora, você já pode participar do programa <strong>Uvits Pro Prescritor</strong>.';
+  const complementoTexto = reativacao
+    ? ' Seu benefício e o seu cupom voltaram a ficar disponíveis.'
+    : ' A partir de agora, você já pode participar do programa Uvits Pro Prescritor.';
+
+  return {
+    para: dados.email,
+    subject: `Seu cadastro como prescritor foi ${acao}`,
+    html: layoutPrescritor({
+      headerTitle: `Cadastro ${acao}!`,
+      bodyHtml: `
+        <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
+        <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
+          Seu cadastro como prescritor foi ${acao}. ${complemento}
+        </p>
+        ${codigo ? couponBlockHtml(codigo, percentual || '') : ''}
+        <p style="margin:0;font-size:13px;color:#5a6b5e;line-height:1.7;">
+          ${codigo ? 'Use e compartilhe esse código com seus pacientes nas compras feitas no site da Uvits.' : ''}
+          Em caso de dúvida, fale com a nossa equipe pelo e-mail
+          <a href="mailto:${contato}" style="color:#2EC4A5;">${contato}</a>.
+        </p>
+      `,
+    }),
+    text: `Olá, ${dados.nome}! Seu cadastro como prescritor foi ${acao}.${complementoTexto}${dados.codigoCupom ? ` Seu código atual é ${dados.codigoCupom}. Use e compartilhe esse código com seus pacientes nas compras no site da Uvits.` : ''} Em caso de dúvida, entre em contato pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
+  };
+}
+
 const EVENTOS = {
   // Já em produção desde o cadastro.js original — migrado pra cá sem
   // mudança de conteúdo (mesmo HTML, mesmos dois e-mails).
@@ -205,31 +240,11 @@ const EVENTOS = {
   },
 
   prescriber_activated(dados) {
-    const nome = escapeHtml(dados.nome);
-    const contato = escapeHtml(dados.contatoEmpresa || 'contato@uvits.com.br');
-    const codigo = dados.codigoCupom ? escapeHtml(dados.codigoCupom) : null;
-    const percentual = dados.percentualCupom ? escapeHtml(dados.percentualCupom) : null;
-    return {
-      para: dados.email,
-      subject: 'Seu cadastro como prescritor foi ativado',
-      html: layoutPrescritor({
-        headerTitle: 'Cadastro ativado!',
-        bodyHtml: `
-          <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
-          <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
-            Seu cadastro como prescritor foi ativado. A partir de agora, você já pode participar do programa
-            <strong>Uvits Pro Prescritor</strong>.
-          </p>
-          ${codigo ? couponBlockHtml(codigo, percentual || '') : ''}
-          <p style="margin:0;font-size:13px;color:#5a6b5e;line-height:1.7;">
-            ${codigo ? 'Use e compartilhe esse código com seus pacientes nas compras feitas no site da Uvits.' : ''}
-            Em caso de dúvida, fale com a nossa equipe pelo e-mail
-            <a href="mailto:${contato}" style="color:#2EC4A5;">${contato}</a>.
-          </p>
-        `,
-      }),
-      text: `Olá, ${dados.nome}! Seu cadastro como prescritor foi ativado.${dados.codigoCupom ? ` Seu código atual é ${dados.codigoCupom}. Use e compartilhe esse código com seus pacientes nas compras no site da Uvits.` : ''} Em caso de dúvida, entre em contato pelo e-mail ${dados.contatoEmpresa || 'contato@uvits.com.br'} ou pelo WhatsApp (19) 99856-6115: ${SUPPORT_WHATSAPP_URL}.`,
-    };
+    return mensagemAtivacao(dados);
+  },
+
+  prescriber_reactivated(dados) {
+    return mensagemAtivacao(dados, true);
   },
 
   prescriber_code_changed(dados) {

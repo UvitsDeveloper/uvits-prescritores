@@ -7,6 +7,7 @@
 - `v2.1.1`: contato de suporte pelo WhatsApp nas mensagens e no site publico.
 - `v2.1.2`: mensagem do WhatsApp identifica explicitamente o prescritor.
 - `v2.1.3`: reorganizacao de documentacao, banco legado e scripts auxiliares.
+- `v2.1.4`: e-mail transacional especifico para reativacao de prescritores.
 
 ## Publicar uma versao
 

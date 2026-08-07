@@ -3,6 +3,14 @@
 Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 [Versionamento Semantico](https://semver.org/lang/pt-BR/).
 
+## [2.1.4] - 2026-08-06
+
+### Corrigido
+
+- Adicionado o evento transacional `prescriber_reactivated`.
+- O e-mail de reativacao informa que o beneficio e o cupom voltaram a ficar disponiveis.
+- O endpoint de notificacoes documenta corretamente todos os eventos recebidos da outbox.
+
 ## [2.1.3] - 2026-08-06
 
 ### Alterado
@@ -53,6 +61,7 @@ Todas as alteracoes relevantes deste projeto sao registradas aqui. O projeto usa
 - Marco de restauracao anterior a integracao ampliada com o Portal e as notificacoes
   transacionais desta release.
 
+[2.1.4]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/UvitsDeveloper/uvits-prescritores/compare/v2.1.0...v2.1.1
