@@ -49,16 +49,6 @@ removidos (e o que fazer com `api/_cpf.js` e o restante dessa cadeia) é uma
 decisão separada, fora do escopo desta mudança — ver a seção "Codigo legado"
 atualizada em `docs/architecture.md`.
 
-## Dependência: Content-Security-Policy deste projeto
-
-`vercel.json` tinha `script-src 'self'`, `style-src 'self'` e `connect-src 'self'`
-— um CSP estrito que bloqueava silenciosamente o `<script src>`/`<link>` do
-componente e todo `fetch()` que ele faz (envio do formulário, checagem de
-código, consulta de CEP), sem erro nenhum visível no HTML, só no console do
-navegador. Liberado especificamente para `https://uvits-portal-prescritores.uvits.workers.dev`
-(script/style/connect) e `https://viacep.com.br` (connect, usado só pela
-consulta de CEP). Nenhuma outra origem foi liberada.
-
 ## Dependência: CORS no Worker
 
 O Worker precisa responder com `Access-Control-Allow-Origin` para a origem
