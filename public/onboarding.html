@@ -72,6 +72,14 @@
     .field select:focus { border-color: var(--primary); }
     .field input.input-error,
     .field select.input-error { border-color: var(--danger); background: #fff7f7; }
+    .field input[readonly],
+    .field select:disabled {
+      background: var(--cream);
+      color: var(--dark);
+      cursor: not-allowed;
+      opacity: .85;
+    }
+    .lock-badge { font-size: 11px; font-weight: 400; }
     .field--half { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .field--third { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
 
@@ -233,9 +241,10 @@
         <p class="form-card__title">Complete seu cadastro</p>
         <p class="form-card__sub">Esses dados são necessários para ativar seu benefício.</p>
         <div class="form-error" id="profile-error" hidden></div>
+        <p class="form-note" id="profile-locked-note" hidden>Os campos marcados com <strong>🔒</strong> já foram cadastrados pela nossa equipe e não podem ser alterados por aqui. Se algum estiver errado, fale com o suporte.</p>
 
         <div class="field">
-          <label for="p-nome">Nome completo *</label>
+          <label for="p-nome">Nome completo * <span class="lock-badge" id="p-nome-lock" hidden>🔒</span></label>
           <input type="text" id="p-nome" autocomplete="name">
         </div>
         <div class="field">
@@ -258,7 +267,7 @@
         </div>
         <div class="field field--half">
           <div>
-            <label for="p-profissao">Profissão *</label>
+            <label for="p-profissao">Profissão * <span class="lock-badge" id="p-profissao-lock" hidden>🔒</span></label>
             <select id="p-profissao">
               <option value="">Selecione</option>
               <option value="Médico(a)">Médico(a)</option>
@@ -266,7 +275,7 @@
             </select>
           </div>
           <div>
-            <label for="p-conselho">Nº do conselho *</label>
+            <label for="p-conselho">Nº do conselho * <span class="lock-badge" id="p-conselho-lock" hidden>🔒</span></label>
             <input type="text" id="p-conselho" placeholder="CRM ou CRN">
           </div>
         </div>
@@ -502,8 +511,9 @@
       try {
         var data = await apiFetch('/api/onboarding/otp-verify', { token: TOKEN, code: codigo });
         sessionToken = data.sessionToken;
+        aplicarPerfilConhecido(data.profile);
         showStep('profile');
-        document.getElementById('p-nome').focus();
+        document.getElementById('p-cpf').focus();
       } catch (e) {
         var msg = e.message;
         if (e.code === 'BLOCKED' && e.retryAfterSeconds) {
@@ -556,6 +566,50 @@
       var d1 = cpfDigitoVerificador(d.slice(0, 9));
       var d2 = cpfDigitoVerificador(d.slice(0, 9) + d1);
       return d === d.slice(0, 9) + String(d1) + String(d2);
+    }
+
+    // Pré-preenche com o que o admin já cadastrou e trava nome/profissão/
+    // conselho quando já vierem preenchidos — o prescritor não edita a
+    // própria identidade profissional depois que a equipe já a verificou.
+    // Quando o admin deixou profissão/conselho em branco de propósito
+    // (convite para prescritor vindo de outra plataforma, sem cadastro
+    // prévio completo), esses dois campos ficam liberados normalmente. O
+    // backend (completionForm.ts) aplica exatamente a mesma regra —
+    // travar aqui é só usabilidade, a garantia real é sempre do servidor.
+    function travarCampo(inputId, lockId, valor) {
+      var input = document.getElementById(inputId);
+      var lock = document.getElementById(lockId);
+      var isSelect = input.tagName === 'SELECT';
+      if (valor) {
+        input.value = valor;
+        if (isSelect) input.disabled = true; else input.readOnly = true;
+        lock.hidden = false;
+        return true;
+      }
+      return false;
+    }
+
+    function aplicarPerfilConhecido(profile) {
+      if (!profile) return;
+      var algumTravado = false;
+      // Nome nunca vem vazio (obrigatório desde a criação do cadastro).
+      if (travarCampo('p-nome', 'p-nome-lock', profile.nome)) algumTravado = true;
+      if (travarCampo('p-profissao', 'p-profissao-lock', profile.profissao)) algumTravado = true;
+      if (travarCampo('p-conselho', 'p-conselho-lock', profile.conselho)) algumTravado = true;
+
+      document.getElementById('profile-locked-note').hidden = !algumTravado;
+
+      // Demais campos: só pré-preenche (continuam editáveis).
+      if (profile.whatsapp) document.getElementById('p-whatsapp').value = mascaraWhatsapp(profile.whatsapp);
+      if (typeof profile.whatsappConsent === 'boolean') document.getElementById('p-whatsapp-consent').checked = profile.whatsappConsent;
+      if (profile.enderecoCep) document.getElementById('p-cep').value = mascaraCep(profile.enderecoCep);
+      if (profile.enderecoRua) document.getElementById('p-rua').value = profile.enderecoRua;
+      if (profile.enderecoNumero) document.getElementById('p-numero').value = profile.enderecoNumero;
+      if (profile.enderecoComplemento) document.getElementById('p-complemento').value = profile.enderecoComplemento;
+      if (profile.enderecoBairro) document.getElementById('p-bairro').value = profile.enderecoBairro;
+      if (profile.enderecoCidade) document.getElementById('p-cidade').value = profile.enderecoCidade;
+      if (profile.enderecoUf) document.getElementById('p-uf').value = profile.enderecoUf;
+      if (profile.instagram) document.getElementById('p-instagram').value = profile.instagram;
     }
 
     var dadosPerfil = null;

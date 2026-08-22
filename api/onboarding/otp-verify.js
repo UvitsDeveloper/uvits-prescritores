@@ -38,5 +38,10 @@ module.exports = async function handler(req, res) {
       attemptsRemaining: resultado.attemptsRemaining,
     });
   }
-  return res.status(200).json({ ok: true, sessionToken: resultado.data.sessionToken, expiresAt: resultado.data.expiresAt });
+  return res.status(200).json({
+    ok: true,
+    sessionToken: resultado.data.sessionToken,
+    expiresAt: resultado.data.expiresAt,
+    profile: resultado.data.profile,
+  });
 };
