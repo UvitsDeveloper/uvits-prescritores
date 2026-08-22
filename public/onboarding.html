@@ -238,6 +238,10 @@
           <label for="p-nome">Nome completo *</label>
           <input type="text" id="p-nome" autocomplete="name">
         </div>
+        <div class="field">
+          <label for="p-cpf">CPF *</label>
+          <input type="text" id="p-cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00">
+        </div>
         <div class="field field--half">
           <div>
             <label for="p-whatsapp">WhatsApp *</label>
@@ -530,11 +534,35 @@
       v = String(v).replace(/\D/g, '').slice(0, 8);
       return v.length > 5 ? v.slice(0, 5) + '-' + v.slice(5) : v;
     }
+    function mascaraCpf(v) {
+      v = String(v).replace(/\D/g, '').slice(0, 11);
+      if (v.length <= 3) return v;
+      if (v.length <= 6) return v.slice(0, 3) + '.' + v.slice(3);
+      if (v.length <= 9) return v.slice(0, 3) + '.' + v.slice(3, 6) + '.' + v.slice(6);
+      return v.slice(0, 3) + '.' + v.slice(3, 6) + '.' + v.slice(6, 9) + '-' + v.slice(9);
+    }
+    // Mesmo algoritmo do validador server-side (api/_cpf.js) — aqui é só
+    // usabilidade (feedback antes de enviar); a validação real é sempre do
+    // Worker.
+    function cpfDigitoVerificador(base) {
+      var soma = 0, peso = base.length + 1;
+      for (var i = 0; i < base.length; i++) { soma += Number(base[i]) * peso; peso--; }
+      var resto = soma % 11;
+      return resto < 2 ? 0 : 11 - resto;
+    }
+    function validarCpfCliente(cpf) {
+      var d = String(cpf).replace(/\D/g, '');
+      if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+      var d1 = cpfDigitoVerificador(d.slice(0, 9));
+      var d2 = cpfDigitoVerificador(d.slice(0, 9) + d1);
+      return d === d.slice(0, 9) + String(d1) + String(d2);
+    }
 
     var dadosPerfil = null;
     function coletarPerfil() {
       return {
         nome: document.getElementById('p-nome').value.trim(),
+        cpf: document.getElementById('p-cpf').value.trim(),
         whatsapp: document.getElementById('p-whatsapp').value.trim(),
         whatsappConsent: document.getElementById('p-whatsapp-consent').checked,
         profissao: document.getElementById('p-profissao').value,
@@ -554,12 +582,17 @@
     async function salvarPerfil() {
       hideError('profile-error');
       var dados = coletarPerfil();
-      var camposObrigatorios = ['nome', 'whatsapp', 'profissao', 'conselho', 'dataNascimento', 'enderecoCep', 'enderecoRua', 'enderecoNumero', 'enderecoBairro', 'enderecoCidade', 'enderecoUf'];
+      var camposObrigatorios = ['nome', 'cpf', 'whatsapp', 'profissao', 'conselho', 'dataNascimento', 'enderecoCep', 'enderecoRua', 'enderecoNumero', 'enderecoBairro', 'enderecoCidade', 'enderecoUf'];
       for (var i = 0; i < camposObrigatorios.length; i++) {
         if (!dados[camposObrigatorios[i]]) {
           showError('profile-error', 'Preencha todos os campos obrigatórios (*).');
           return;
         }
+      }
+      if (!validarCpfCliente(dados.cpf)) {
+        showError('profile-error', 'CPF inválido — confira os dígitos.');
+        document.getElementById('p-cpf').focus();
+        return;
       }
       var btn = document.getElementById('btn-save-profile');
       btn.disabled = true;
@@ -724,6 +757,7 @@
     });
     document.getElementById('p-whatsapp').addEventListener('input', function (e) { e.target.value = mascaraWhatsapp(e.target.value); });
     document.getElementById('p-cep').addEventListener('input', function (e) { e.target.value = mascaraCep(e.target.value); });
+    document.getElementById('p-cpf').addEventListener('input', function (e) { e.target.value = mascaraCpf(e.target.value); });
     document.getElementById('btn-save-profile').addEventListener('click', salvarPerfil);
     document.getElementById('coupon-code').addEventListener('input', onCouponInput);
     document.getElementById('btn-reserve-coupon').addEventListener('click', reservarCupomEscolhido);

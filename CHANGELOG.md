@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.1 - 2026-08-22
+
+- O formulário de onboarding por convite (`public/onboarding.html`) passa a
+  coletar o CPF do próprio prescritor, com máscara e checagem de dígito
+  verificador no cliente — a regra de negócio mudou: CPF deixou de ser
+  pré-requisito da aprovação pela equipe e passou a ser informado pelo
+  prescritor, exigido de fato só na conclusão (ver Worker).
+
 ## 2.3.0 - 2026-08-22
 
 - Adiciona a página pública de onboarding por convite (`/onboarding/:token`,

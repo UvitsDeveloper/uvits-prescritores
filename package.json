@@ -1,6 +1,6 @@
 {
   "name": "uvits-prescritores",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Landing page Uvits Pro Prescritor com painel administrativo",
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",

@@ -47,6 +47,7 @@ module.exports = async function handler(req, res) {
   const payload = {
     sessionToken,
     nome: sanitize(b.nome, 120),
+    cpf: String(b.cpf || '').replace(/\D/g, '').slice(0, 11),
     whatsapp: sanitize(b.whatsapp, 30),
     whatsappConsent: b.whatsappConsent === true,
     profissao: sanitize(b.profissao, 60),
