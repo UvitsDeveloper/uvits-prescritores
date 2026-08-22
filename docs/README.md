@@ -4,6 +4,7 @@
 
 - [Arquitetura](architecture.md): papel da Vercel, do Worker, da Shopify e do Resend.
 - [Mapa do repositorio](project-structure.md): finalidade de cada pasta e arquivo principal.
+- [Onboarding por convite](operations/onboarding.md): pagina publica e rotas de proxy pro Worker.
 - [Deploy na Vercel](operations/deploy-vercel.md): configuracao e verificacao operacional.
 - [Release e restauracao](operations/release-and-rollback.md): tags e rollback seguro.
 - [Changelog](../CHANGELOG.md): historico das versoes.

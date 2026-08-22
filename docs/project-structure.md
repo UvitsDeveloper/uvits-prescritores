@@ -23,6 +23,8 @@
 | `api/_ratelimit.js` | Limites de tentativas |
 | `api/_shopifySync.js` | Cliente do Worker do Portal |
 | `api/_usage.js` | Medicao e alerta de consumo do Redis |
+| `api/_onboardingSync.js` | Cliente do Worker pro onboarding por convite (`/internal/onboarding/*`) |
+| `api/onboarding/*.js` | 8 rotas de proxy do onboarding por convite (status, otp, formulario, cupom, conclusao) |
 
 ## Frontend
 
@@ -30,6 +32,7 @@
 |---|---|
 | `public/index.html` | Landing page e formulario |
 | `public/obrigado.html` | Confirmacao apos cadastro |
+| `public/onboarding.html` | Fluxo de onboarding por convite (`/onboarding/:token`) |
 
 ## Banco legado
 

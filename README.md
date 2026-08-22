@@ -7,8 +7,11 @@ Shopify e entrega e-mails transacionais pelo Resend.
 ## Papel deste repositorio
 
 - Servir as paginas publicas de cadastro e agradecimento.
+- Servir a pagina publica de onboarding por convite (`/onboarding/:token`) —
+  o prescritor ja aprovado confirma o e-mail, completa o cadastro e escolhe
+  o cupom, sem a equipe precisar preencher nada manualmente.
 - Validar e limitar tentativas do formulario.
-- Encaminhar novos cadastros ao Worker `uvits-portal-prescritores`.
+- Encaminhar novos cadastros e o fluxo de onboarding ao Worker `uvits-portal-prescritores`.
 - Enviar confirmacoes, avisos de ativacao e alteracoes de cupom.
 - Expor endpoints legados protegidos enquanto a transicao do Postgres existir.
 
@@ -45,6 +48,7 @@ Veja o inventario completo em [docs/project-structure.md](docs/project-structure
 | `POST /api/cadastro` | Recebe o formulario publico e cria/vincula o perfil na Shopify |
 | `POST /api/notificar` | Entrega eventos de e-mail solicitados pelo Worker |
 | `GET/PATCH/DELETE /api/prescritores` | Compatibilidade com o cadastro Postgres legado |
+| `POST /api/onboarding/*` (8 rotas) | Onboarding por convite — ponte fina pro Worker (`/internal/onboarding/*`). Ver [docs/operations/onboarding.md](docs/operations/onboarding.md) |
 
 Arquivos iniciados por `_` em `api/` sao modulos internos compartilhados e nao
 devem ser tratados como telas ou APIs publicas de negocio.
@@ -54,6 +58,7 @@ devem ser tratados como telas ou APIs publicas de negocio.
 - [Indice da documentacao](docs/README.md)
 - [Arquitetura atual](docs/architecture.md)
 - [Mapa de pastas e arquivos](docs/project-structure.md)
+- [Onboarding por convite](docs/operations/onboarding.md)
 - [Deploy na Vercel](docs/operations/deploy-vercel.md)
 - [Release e restauracao](docs/operations/release-and-rollback.md)
 - [Contexto historico arquivado](docs/archive/legacy-claude-context.md)
@@ -78,6 +83,8 @@ adicionados ao Git.
 node --check api/cadastro.js
 node --check api/notificar.js
 node --check api/prescritores.js
+node --check api/_onboardingSync.js
+for f in api/onboarding/*.js; do node --check "$f"; done
 npx vercel --prod
 ```
 

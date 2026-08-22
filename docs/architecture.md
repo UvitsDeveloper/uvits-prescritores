@@ -30,6 +30,24 @@ Se a pessoa havia sido excluida do programa, o Worker reutiliza o cliente
 Shopify e abre uma nova analise. Status, cupom e beneficios anteriores nao sao
 restaurados automaticamente.
 
+## Fluxo de onboarding por convite
+
+```text
+public/onboarding.html (/onboarding/:token)
+  -> POST /api/onboarding/status        (confere o convite, mostra e-mail mascarado)
+  -> POST /api/onboarding/otp-request   (envia codigo por e-mail — Worker/Resend)
+  -> POST /api/onboarding/otp-verify    (confirma o codigo, recebe sessionToken)
+  -> POST /api/onboarding/profile       (formulario de complementacao)
+  -> POST /api/onboarding/coupon-*      (disponibilidade, sugestao, reserva)
+  -> POST /api/onboarding/complete      (sincroniza cupom Shopify+Yampi, ativa)
+```
+
+Toda a regra de negocio (validade do convite, tentativas de codigo,
+normalizacao/unicidade do cupom) vive no Worker — ver
+`docs/operations/onboarding.md` e `docs/operations/onboarding-technical.md`
+(este ultimo no repositorio do Worker). Este repositorio so serve a pagina e
+repassa as chamadas autenticado, sem guardar nenhum dado do onboarding aqui.
+
 ## E-mails
 
 `api/_notificacoes.js` concentra os templates. `api/notificar.js` recebe eventos

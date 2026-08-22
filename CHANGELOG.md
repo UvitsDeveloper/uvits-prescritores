@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.3.0 - 2026-08-22
+
+- Adiciona a página pública de onboarding por convite (`/onboarding/:token`,
+  `public/onboarding.html`): confirmação de e-mail por código, formulário de
+  complementação cadastral e escolha do cupom de indicação, sem a equipe
+  precisar preencher nada manualmente.
+- Adiciona 8 rotas de proxy (`api/onboarding/*.js`) e o cliente
+  `api/_onboardingSync.js`, que encaminham autenticado pro Worker
+  (`/internal/onboarding/*`) — toda a regra de negócio continua no Worker,
+  esta app só serve a tela e repassa as chamadas.
+- Nenhuma variável de ambiente nova — reaproveita `WORKER_API_URL` e
+  `SHOPIFY_SYNC_SERVICE_KEY` já existentes.
+
 ## 2.2.1 - 2026-08-07
 
 - Define `status@api.alert.uvits.com.br` como remetente padrão dos e-mails

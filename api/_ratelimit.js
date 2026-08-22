@@ -62,4 +62,17 @@ const limitarCadastro = criarLimiter('rl:cadastro',  5, '1 h',  60 * 60 * 1000);
 // Exclusões: teto baixo por janela para impedir delete em larga escala
 const limitarDelete   = criarLimiter('rl:delete',   20, '10 m', 10 * 60 * 1000);
 
-module.exports = { limitarLogin, limitarCadastro, limitarDelete, usandoRedis: !!redis };
+// Onboarding por convite: camada só de proteção contra flood nesta app —
+// deliberadamente mais folgada que o limite de verdade, que já existe no
+// Worker (10/hora por IP pra solicitar código, 20/10min pra verificar — ver
+// docs/operations/onboarding-observability.md no repo do Worker). Bloquear
+// aqui também, mais apertado, só duplicaria a régua sem ganho real.
+const limitarOnboardingLeitura = criarLimiter('rl:onboarding-leitura', 60, '1 h', 60 * 60 * 1000);
+const limitarOnboardingOtp     = criarLimiter('rl:onboarding-otp',     30, '1 h', 60 * 60 * 1000);
+const limitarOnboardingEscrita = criarLimiter('rl:onboarding-escrita', 30, '15 m', 15 * 60 * 1000);
+
+module.exports = {
+  limitarLogin, limitarCadastro, limitarDelete,
+  limitarOnboardingLeitura, limitarOnboardingOtp, limitarOnboardingEscrita,
+  usandoRedis: !!redis,
+};

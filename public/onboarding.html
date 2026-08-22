@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Completar cadastro — Uvits Pro Prescritor</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:  #2EC4A5;
+      --dark:     #1C2620;
+      --cream:    #F5F1EC;
+      --border:   #E8E3DD;
+      --text:     #5a6b5e;
+      --primary-light: #e8faf6;
+      --danger: #c0392b;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .page { width: 100%; max-width: 460px; }
+
+    .brand { text-align: center; margin-bottom: 20px; }
+    .brand__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--primary); }
+    .brand__title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; margin-top: 4px; }
+
+    /* ── indicador de progresso ── */
+    .progress { display: flex; gap: 6px; margin-bottom: 20px; }
+    .progress__dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background-color .2s; }
+    .progress__dot.is-done, .progress__dot.is-active { background: var(--primary); }
+
+    /* ── card (mesmo componente do formulário público) ── */
+    .form-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 28px 24px;
+      width: 100%;
+    }
+    .form-card__title { font-size: 18px; font-weight: 900; letter-spacing: -0.4px; margin-bottom: 4px; }
+    .form-card__sub   { font-size: 13px; color: var(--text); margin-bottom: 20px; line-height: 1.55; }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 5px; letter-spacing: .3px; }
+    .field-hint { font-size: 11px; color: var(--text); margin-top: 4px; }
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      color: var(--dark);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+      appearance: none;
+      font-family: inherit;
+    }
+    .field input:focus,
+    .field select:focus { border-color: var(--primary); }
+    .field input.input-error,
+    .field select.input-error { border-color: var(--danger); background: #fff7f7; }
+    .field--half { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field--third { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+
+    .checkbox-field { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+    .checkbox-field input { width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0; }
+    .checkbox-field label { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px; font-weight: 700;
+      padding: 16px;
+      border: none; border-radius: 10px;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: opacity .2s;
+    }
+    .btn-submit:hover:not(:disabled) { opacity: .88; }
+    .btn-submit:disabled { opacity: .55; cursor: not-allowed; }
+
+    .btn-link {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 13px; font-weight: 700;
+      padding: 12px;
+      cursor: pointer;
+    }
+    .btn-link:hover:not(:disabled) { text-decoration: underline; }
+    .btn-link:disabled { color: #aab8b2; cursor: not-allowed; text-decoration: none; }
+
+    .form-error {
+      background: #fff0f0; border: 1px solid #fcc;
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 13px; color: var(--danger);
+      margin-bottom: 16px; line-height: 1.5;
+    }
+    .form-note {
+      background: var(--primary-light); border: 1px solid rgba(46,196,165,.25);
+      border-radius: 8px; padding: 12px 14px;
+      font-size: 12px; color: var(--dark);
+      margin-bottom: 16px; line-height: 1.55;
+    }
+
+    .otp-input {
+      width: 100%; text-align: center;
+      font-size: 28px; font-weight: 800; letter-spacing: 10px;
+      padding: 14px 10px 14px 20px;
+    }
+
+    .coupon-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+    .coupon-suggestion {
+      border: 1px solid var(--border); background: var(--cream);
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 13px; font-weight: 700; color: var(--dark);
+      cursor: pointer; transition: border-color .2s, background-color .2s;
+    }
+    .coupon-suggestion:hover { border-color: var(--primary); background: var(--primary-light); }
+    .coupon-status { font-size: 12px; margin-top: 6px; min-height: 16px; }
+    .coupon-status.is-available { color: var(--primary); font-weight: 700; }
+    .coupon-status.is-unavailable { color: var(--danger); font-weight: 700; }
+
+    .summary-list { list-style: none; margin-bottom: 18px; }
+    .summary-list li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .summary-list li:last-child { border-bottom: none; }
+    .summary-list dt, .summary-list .k { color: var(--text); }
+    .summary-list .v { font-weight: 700; text-align: right; }
+
+    .center-state { text-align: center; padding: 12px 0; }
+    .center-state__icon { width: 44px; height: 44px; margin: 0 auto 14px; color: var(--primary); }
+    .center-state__icon svg { width: 100%; height: 100%; }
+    .center-state__icon.is-error { color: var(--danger); }
+    .center-state__title { font-size: 17px; font-weight: 900; margin-bottom: 8px; }
+    .center-state__text { font-size: 14px; color: var(--text); line-height: 1.65; margin-bottom: 18px; }
+
+    .support-link { display: inline-block; margin-top: 6px; font-size: 13px; color: var(--primary); font-weight: 700; text-decoration: none; }
+    .support-link:hover { text-decoration: underline; }
+
+    .spinner {
+      width: 28px; height: 28px; margin: 0 auto 14px;
+      border: 3px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    [hidden] { display: none !important; }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+      outline: 3px solid var(--primary); outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="brand">
+      <div class="brand__eyebrow">Uvits Pro Prescritor</div>
+      <div class="brand__title">Completar cadastro</div>
+    </div>
+
+    <div class="progress" id="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-label="Etapas do cadastro">
+      <div class="progress__dot" data-step="1"></div>
+      <div class="progress__dot" data-step="2"></div>
+      <div class="progress__dot" data-step="3"></div>
+      <div class="progress__dot" data-step="4"></div>
+    </div>
+
+    <div class="form-card">
+      <div aria-live="polite" role="status" class="sr-only" id="live-region"></div>
+
+      <!-- Carregando -->
+      <section id="step-loading" class="center-state">
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="center-state__text">Verificando seu convite…</p>
+      </section>
+
+      <!-- Convite inválido / falha irrecuperável -->
+      <section id="step-invalid" class="center-state" hidden>
+        <div class="center-state__icon is-error" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <p class="center-state__title">Este link não é mais válido</p>
+        <p class="center-state__text" id="invalid-message">Solicite um novo convite com a equipe Uvits Pro Prescritor.</p>
+        <a class="support-link" href="https://api.whatsapp.com/send/?phone=5519998566115&text=Preciso+de+um+novo+convite+de+cadastro&type=phone_number&app_absent=0" target="_blank" rel="noopener">Falar com o suporte no WhatsApp ↗</a>
+      </section>
+
+      <!-- Passo 1: solicitar código -->
+      <section id="step-request-otp" hidden>
+        <p class="form-card__title">Confirme seu e-mail</p>
+        <p class="form-card__sub">Vamos enviar um código de confirmação para <strong id="masked-email">—</strong>.</p>
+        <div class="form-error" id="request-otp-error" hidden></div>
+        <button class="btn-submit" id="btn-send-otp" type="button">Enviar código →</button>
+      </section>
+
+      <!-- Passo 1b: verificar código -->
+      <section id="step-verify-otp" hidden>
+        <p class="form-card__title">Digite o código</p>
+        <p class="form-card__sub">Enviamos um código de 6 dígitos para <strong id="masked-email-2">—</strong>. Ele vale por 10 minutos.</p>
+        <div class="form-error" id="verify-otp-error" hidden></div>
+        <div class="field">
+          <label for="otp-code" class="sr-only">Código de confirmação</label>
+          <input type="text" id="otp-code" class="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+        </div>
+        <button class="btn-submit" id="btn-verify-otp" type="button">Confirmar código</button>
+        <button class="btn-link" id="btn-resend-otp" type="button">Reenviar código</button>
+      </section>
+
+      <!-- Passo 2: formulário de complementação -->
+      <section id="step-profile" hidden>
+        <p class="form-card__title">Complete seu cadastro</p>
+        <p class="form-card__sub">Esses dados são necessários para ativar seu benefício.</p>
+        <div class="form-error" id="profile-error" hidden></div>
+
+        <div class="field">
+          <label for="p-nome">Nome completo *</label>
+          <input type="text" id="p-nome" autocomplete="name">
+        </div>
+        <div class="field field--half">
+          <div>
+            <label for="p-whatsapp">WhatsApp *</label>
+            <input type="text" id="p-whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999">
+          </div>
+          <div>
+            <label for="p-data-nascimento">Data de nascimento *</label>
+            <input type="date" id="p-data-nascimento" autocomplete="bday">
+          </div>
+        </div>
+        <div class="checkbox-field">
+          <input type="checkbox" id="p-whatsapp-consent">
+          <label for="p-whatsapp-consent">Aceito receber mensagens sobre o programa pelo WhatsApp.</label>
+        </div>
+        <div class="field field--half">
+          <div>
+            <label for="p-profissao">Profissão *</label>
+            <select id="p-profissao">
+              <option value="">Selecione</option>
+              <option value="Médico(a)">Médico(a)</option>
+              <option value="Nutricionista">Nutricionista</option>
+            </select>
+          </div>
+          <div>
+            <label for="p-conselho">Nº do conselho *</label>
+            <input type="text" id="p-conselho" placeholder="CRM ou CRN">
+          </div>
+        </div>
+
+        <div class="field field--third">
+          <div>
+            <label for="p-cep">CEP *</label>
+            <input type="text" id="p-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000">
+          </div>
+          <div>
+            <label for="p-numero">Número *</label>
+            <input type="text" id="p-numero" autocomplete="address-line2">
+          </div>
+        </div>
+        <div class="field">
+          <label for="p-rua">Rua *</label>
+          <input type="text" id="p-rua" autocomplete="address-line1">
+        </div>
+        <div class="field field--half">
+          <div>
+            <label for="p-complemento">Complemento</label>
+            <input type="text" id="p-complemento">
+          </div>
+          <div>
+            <label for="p-bairro">Bairro *</label>
+            <input type="text" id="p-bairro">
+          </div>
+        </div>
+        <div class="field field--third">
+          <div>
+            <label for="p-cidade">Cidade *</label>
+            <input type="text" id="p-cidade" autocomplete="address-level2">
+          </div>
+          <div>
+            <label for="p-uf">UF *</label>
+            <input type="text" id="p-uf" maxlength="2" autocomplete="address-level1" style="text-transform:uppercase">
+          </div>
+        </div>
+        <div class="field">
+          <label for="p-instagram">Instagram <span style="font-weight:400;color:var(--text)">(opcional)</span></label>
+          <input type="text" id="p-instagram" placeholder="@seuperfil">
+        </div>
+
+        <button class="btn-submit" id="btn-save-profile" type="button">Continuar →</button>
+      </section>
+
+      <!-- Passo 3: cupom -->
+      <section id="step-coupon" hidden>
+        <p class="form-card__title">Escolha seu código de cupom</p>
+        <p class="form-card__sub">É o código que seus pacientes vão usar. O percentual de desconto já está definido pelo programa.</p>
+        <div class="form-error" id="coupon-error" hidden></div>
+
+        <div class="field">
+          <label for="coupon-code">Código do cupom *</label>
+          <input type="text" id="coupon-code" placeholder="Ex: DRJOAO10" maxlength="30" autocomplete="off" style="text-transform:uppercase">
+          <p class="coupon-status" id="coupon-status" aria-live="polite"></p>
+        </div>
+
+        <div id="coupon-suggestions-wrap" hidden>
+          <p class="field-hint" style="margin-bottom:6px">Sugestões disponíveis:</p>
+          <div class="coupon-suggestions" id="coupon-suggestions"></div>
+        </div>
+
+        <button class="btn-submit" id="btn-reserve-coupon" type="button" disabled>Continuar →</button>
+      </section>
+
+      <!-- Passo 4: revisão -->
+      <section id="step-review" hidden>
+        <p class="form-card__title">Confira e conclua</p>
+        <p class="form-card__sub">Revise seus dados antes de concluir o cadastro.</p>
+        <div class="form-error" id="review-error" hidden></div>
+        <ul class="summary-list" id="review-list"></ul>
+        <button class="btn-submit" id="btn-complete" type="button">Concluir cadastro</button>
+      </section>
+
+      <!-- Sucesso -->
+      <section id="step-success" class="center-state" hidden>
+        <div class="center-state__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <p class="center-state__title">Cadastro concluído!</p>
+        <p class="center-state__text" id="success-text">Seu benefício já está ativo.</p>
+      </section>
+
+      <!-- Falha recuperável na conclusão -->
+      <section id="step-retry" class="center-state" hidden>
+        <div class="center-state__icon is-error" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <p class="center-state__title">Não conseguimos concluir agora</p>
+        <p class="center-state__text">Houve uma falha temporária. Seus dados e sua escolha de cupom continuam salvos — pode tentar de novo.</p>
+        <button class="btn-submit" id="btn-retry-complete" type="button">Tentar novamente</button>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    var TOKEN = decodeURIComponent((window.location.pathname.split('/onboarding/')[1] || '').split('/')[0] || '');
+    var sessionToken = null;
+    var reservedCoupon = null;
+    var resendCooldownTimer = null;
+
+    var live = document.getElementById('live-region');
+    function announce(msg) { live.textContent = msg; }
+
+    var STEPS = ['loading', 'invalid', 'request-otp', 'verify-otp', 'profile', 'coupon', 'review', 'success', 'retry'];
+    var PROGRESS_BY_STEP = { 'request-otp': 1, 'verify-otp': 1, profile: 2, coupon: 3, review: 4, success: 4 };
+
+    function showStep(name) {
+      STEPS.forEach(function (s) {
+        var el = document.getElementById('step-' + s);
+        if (el) el.hidden = (s !== name);
+      });
+      var progressEl = document.getElementById('progress');
+      var current = PROGRESS_BY_STEP[name];
+      if (current) {
+        progressEl.hidden = false;
+        progressEl.setAttribute('aria-valuenow', String(current));
+        Array.prototype.forEach.call(progressEl.querySelectorAll('.progress__dot'), function (dot) {
+          var i = Number(dot.dataset.step);
+          dot.classList.toggle('is-done', i < current);
+          dot.classList.toggle('is-active', i === current);
+        });
+      } else {
+        progressEl.hidden = true;
+      }
+    }
+
+    function showError(fieldId, msg) {
+      var el = document.getElementById(fieldId);
+      el.textContent = msg;
+      el.hidden = false;
+      announce(msg);
+    }
+    function hideError(fieldId) {
+      document.getElementById(fieldId).hidden = true;
+    }
+
+    async function apiFetch(path, body) {
+      var res = await fetch(path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {}),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) {
+        var err = new Error(data.error || 'Ocorreu um erro. Tente novamente.');
+        err.code = data.code;
+        err.status = res.status;
+        err.retryAfterSeconds = data.retryAfterSeconds;
+        err.attemptsRemaining = data.attemptsRemaining;
+        throw err;
+      }
+      return data;
+    }
+
+    // ── Passo inicial: validar o convite ──
+    async function iniciar() {
+      if (!TOKEN) {
+        document.getElementById('invalid-message').textContent = 'Link incompleto. Verifique se copiou o link inteiro.';
+        showStep('invalid');
+        return;
+      }
+      try {
+        var data = await apiFetch('/api/onboarding/status', { token: TOKEN });
+        document.getElementById('masked-email').textContent = data.maskedEmail;
+        document.getElementById('masked-email-2').textContent = data.maskedEmail;
+        showStep('request-otp');
+      } catch (e) {
+        document.getElementById('invalid-message').textContent = e.message;
+        showStep('invalid');
+      }
+    }
+
+    // ── Solicitar código ──
+    var resendsRemaining = null;
+    async function solicitarCodigo(isResend) {
+      var btn = isResend ? document.getElementById('btn-resend-otp') : document.getElementById('btn-send-otp');
+      var errField = isResend ? 'verify-otp-error' : 'request-otp-error';
+      hideError(errField);
+      btn.disabled = true;
+      var textoOriginal = btn.textContent;
+      btn.textContent = 'Enviando...';
+      try {
+        var data = await apiFetch('/api/onboarding/otp-request', { token: TOKEN });
+        resendsRemaining = data.resendsRemaining;
+        showStep('verify-otp');
+        document.getElementById('otp-code').value = '';
+        document.getElementById('otp-code').focus();
+        announce('Código enviado. Confira seu e-mail.');
+        iniciarCooldownReenvio();
+      } catch (e) {
+        showError(errField, e.message);
+        btn.disabled = false;
+        btn.textContent = textoOriginal;
+        if (e.code === 'MAX_RESENDS_EXCEEDED' || e.code === 'PRESCRIBER_EMAIL_INVALID' || e.code === 'EMAIL_UNAVAILABLE') {
+          document.getElementById('invalid-message').textContent = e.message;
+          showStep('invalid');
+        }
+      }
+    }
+
+    function iniciarCooldownReenvio() {
+      var btn = document.getElementById('btn-resend-otp');
+      var segundos = 30;
+      btn.disabled = true;
+      clearInterval(resendCooldownTimer);
+      function atualizar() {
+        if (segundos <= 0) {
+          clearInterval(resendCooldownTimer);
+          btn.disabled = false;
+          btn.textContent = 'Reenviar código';
+          return;
+        }
+        btn.textContent = 'Reenviar código (' + segundos + 's)';
+        segundos--;
+      }
+      atualizar();
+      resendCooldownTimer = setInterval(atualizar, 1000);
+    }
+
+    // ── Verificar código ──
+    async function verificarCodigo() {
+      var codigo = document.getElementById('otp-code').value.trim();
+      hideError('verify-otp-error');
+      if (!/^\d{6}$/.test(codigo)) {
+        showError('verify-otp-error', 'Informe os 6 dígitos do código.');
+        return;
+      }
+      var btn = document.getElementById('btn-verify-otp');
+      btn.disabled = true;
+      btn.textContent = 'Confirmando...';
+      try {
+        var data = await apiFetch('/api/onboarding/otp-verify', { token: TOKEN, code: codigo });
+        sessionToken = data.sessionToken;
+        showStep('profile');
+        document.getElementById('p-nome').focus();
+      } catch (e) {
+        var msg = e.message;
+        if (e.code === 'BLOCKED' && e.retryAfterSeconds) {
+          msg += ' Tente novamente em ' + Math.ceil(e.retryAfterSeconds / 60) + ' minuto(s).';
+        } else if (typeof e.attemptsRemaining === 'number') {
+          msg += ' Tentativas restantes: ' + e.attemptsRemaining + '.';
+        }
+        showError('verify-otp-error', msg);
+        if (e.code === 'INVITE_NOT_USABLE' || e.code === 'EXPIRED') {
+          document.getElementById('invalid-message').textContent = e.message;
+          showStep('invalid');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Confirmar código';
+      }
+    }
+
+    // ── Máscaras (mesmo padrão do cadastro público) ──
+    function mascaraWhatsapp(v) {
+      v = String(v).replace(/\D/g, '').slice(0, 11);
+      if (v.length <= 2) return v ? '(' + v : v;
+      if (v.length <= 6) return '(' + v.slice(0, 2) + ') ' + v.slice(2);
+      if (v.length <= 10) return '(' + v.slice(0, 2) + ') ' + v.slice(2, 6) + '-' + v.slice(6);
+      return '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
+    }
+    function mascaraCep(v) {
+      v = String(v).replace(/\D/g, '').slice(0, 8);
+      return v.length > 5 ? v.slice(0, 5) + '-' + v.slice(5) : v;
+    }
+
+    var dadosPerfil = null;
+    function coletarPerfil() {
+      return {
+        nome: document.getElementById('p-nome').value.trim(),
+        whatsapp: document.getElementById('p-whatsapp').value.trim(),
+        whatsappConsent: document.getElementById('p-whatsapp-consent').checked,
+        profissao: document.getElementById('p-profissao').value,
+        conselho: document.getElementById('p-conselho').value.trim(),
+        dataNascimento: document.getElementById('p-data-nascimento').value,
+        enderecoCep: document.getElementById('p-cep').value.trim(),
+        enderecoRua: document.getElementById('p-rua').value.trim(),
+        enderecoNumero: document.getElementById('p-numero').value.trim(),
+        enderecoComplemento: document.getElementById('p-complemento').value.trim(),
+        enderecoBairro: document.getElementById('p-bairro').value.trim(),
+        enderecoCidade: document.getElementById('p-cidade').value.trim(),
+        enderecoUf: document.getElementById('p-uf').value.trim().toUpperCase(),
+        instagram: document.getElementById('p-instagram').value.trim(),
+      };
+    }
+
+    async function salvarPerfil() {
+      hideError('profile-error');
+      var dados = coletarPerfil();
+      var camposObrigatorios = ['nome', 'whatsapp', 'profissao', 'conselho', 'dataNascimento', 'enderecoCep', 'enderecoRua', 'enderecoNumero', 'enderecoBairro', 'enderecoCidade', 'enderecoUf'];
+      for (var i = 0; i < camposObrigatorios.length; i++) {
+        if (!dados[camposObrigatorios[i]]) {
+          showError('profile-error', 'Preencha todos os campos obrigatórios (*).');
+          return;
+        }
+      }
+      var btn = document.getElementById('btn-save-profile');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+      try {
+        await apiFetch('/api/onboarding/profile', Object.assign({ sessionToken: sessionToken }, dados));
+        dadosPerfil = dados;
+        showStep('coupon');
+        document.getElementById('coupon-code').focus();
+      } catch (e) {
+        showError('profile-error', e.message);
+        if (e.code === 'SESSION_NOT_USABLE' || e.code === 'INVITE_NOT_USABLE') {
+          document.getElementById('invalid-message').textContent = 'Sua sessão expirou. Volte ao link do convite e confirme o código novamente.';
+          showStep('invalid');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Continuar →';
+      }
+    }
+
+    // ── Cupom: disponibilidade (debounced), sugestões, reserva ──
+    var couponDebounce = null;
+    function onCouponInput() {
+      var input = document.getElementById('coupon-code');
+      input.value = input.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      document.getElementById('btn-reserve-coupon').disabled = true;
+      var statusEl = document.getElementById('coupon-status');
+      statusEl.textContent = '';
+      statusEl.className = 'coupon-status';
+      clearTimeout(couponDebounce);
+      var code = input.value.trim();
+      if (code.length < 3) return;
+      couponDebounce = setTimeout(function () { verificarDisponibilidadeCupom(code); }, 450);
+    }
+
+    async function verificarDisponibilidadeCupom(code) {
+      var statusEl = document.getElementById('coupon-status');
+      statusEl.textContent = 'Verificando…';
+      statusEl.className = 'coupon-status';
+      try {
+        var data = await apiFetch('/api/onboarding/coupon-availability', { sessionToken: sessionToken, code: code });
+        if (document.getElementById('coupon-code').value.trim() !== code) return; // resposta desatualizada
+        if (data.available) {
+          statusEl.textContent = 'Disponível!';
+          statusEl.className = 'coupon-status is-available';
+          document.getElementById('btn-reserve-coupon').disabled = false;
+        } else {
+          statusEl.textContent = 'Este código já está em uso — escolha outro.';
+          statusEl.className = 'coupon-status is-unavailable';
+          document.getElementById('btn-reserve-coupon').disabled = true;
+        }
+      } catch (e) {
+        statusEl.textContent = e.message;
+        statusEl.className = 'coupon-status is-unavailable';
+      }
+    }
+
+    async function carregarSugestoes() {
+      try {
+        var data = await apiFetch('/api/onboarding/coupon-suggestions', { sessionToken: sessionToken });
+        var wrap = document.getElementById('coupon-suggestions-wrap');
+        var container = document.getElementById('coupon-suggestions');
+        if (!data.suggestions || !data.suggestions.length) { wrap.hidden = true; return; }
+        container.innerHTML = '';
+        data.suggestions.forEach(function (s) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'coupon-suggestion';
+          btn.textContent = s;
+          btn.addEventListener('click', function () {
+            document.getElementById('coupon-code').value = s;
+            onCouponInput();
+            verificarDisponibilidadeCupom(s);
+          });
+          container.appendChild(btn);
+        });
+        wrap.hidden = false;
+      } catch (e) {
+        // sugestão é só conveniência — falha aqui não bloqueia o fluxo
+      }
+    }
+
+    async function reservarCupomEscolhido() {
+      hideError('coupon-error');
+      var code = document.getElementById('coupon-code').value.trim();
+      if (!code) return;
+      var btn = document.getElementById('btn-reserve-coupon');
+      btn.disabled = true;
+      btn.textContent = 'Reservando...';
+      try {
+        var data = await apiFetch('/api/onboarding/coupon-reserve', { sessionToken: sessionToken, code: code });
+        reservedCoupon = data;
+        montarRevisao();
+        showStep('review');
+      } catch (e) {
+        showError('coupon-error', e.message);
+        document.getElementById('coupon-status').textContent = '';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Continuar →';
+      }
+    }
+
+    function montarRevisao() {
+      var list = document.getElementById('review-list');
+      var itens = [
+        ['Nome', dadosPerfil.nome],
+        ['WhatsApp', dadosPerfil.whatsapp],
+        ['Profissão', dadosPerfil.profissao],
+        ['Conselho', dadosPerfil.conselho],
+        ['Endereço', dadosPerfil.enderecoRua + ', ' + dadosPerfil.enderecoNumero + ' — ' + dadosPerfil.enderecoCidade + '/' + dadosPerfil.enderecoUf],
+        ['Cupom escolhido', reservedCoupon.code],
+      ];
+      list.innerHTML = itens.map(function (item) {
+        return '<li><span class="k">' + item[0] + '</span><span class="v">' + escapeHtml(item[1]) + '</span></li>';
+      }).join('');
+    }
+
+    function escapeHtml(v) {
+      return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ── Conclusão ──
+    async function concluir() {
+      hideError('review-error');
+      var btn = document.getElementById('btn-complete');
+      btn.disabled = true;
+      btn.textContent = 'Concluindo...';
+      try {
+        var data = await apiFetch('/api/onboarding/complete', { sessionToken: sessionToken });
+        if (data.activated) {
+          document.getElementById('success-text').textContent =
+            'Seu cupom "' + data.coupon.code + '" já está pronto para compartilhar com seus pacientes.';
+          showStep('success');
+        } else {
+          showStep('retry');
+        }
+      } catch (e) {
+        if (e.code === 'ALREADY_PROCESSING') {
+          showError('review-error', 'Sua conclusão já está sendo processada. Aguarde um instante.');
+        } else if (e.code === 'PROFILE_INCOMPLETE' || e.code === 'COUPON_NOT_RESERVED') {
+          showError('review-error', e.message);
+        } else {
+          showStep('retry');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Concluir cadastro';
+      }
+    }
+
+    // ── Listeners ──
+    document.getElementById('btn-send-otp').addEventListener('click', function () { solicitarCodigo(false); });
+    document.getElementById('btn-resend-otp').addEventListener('click', function () { solicitarCodigo(true); });
+    document.getElementById('btn-verify-otp').addEventListener('click', verificarCodigo);
+    document.getElementById('otp-code').addEventListener('input', function (e) {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    });
+    document.getElementById('otp-code').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') verificarCodigo();
+    });
+    document.getElementById('p-whatsapp').addEventListener('input', function (e) { e.target.value = mascaraWhatsapp(e.target.value); });
+    document.getElementById('p-cep').addEventListener('input', function (e) { e.target.value = mascaraCep(e.target.value); });
+    document.getElementById('btn-save-profile').addEventListener('click', salvarPerfil);
+    document.getElementById('coupon-code').addEventListener('input', onCouponInput);
+    document.getElementById('btn-reserve-coupon').addEventListener('click', reservarCupomEscolhido);
+    document.getElementById('btn-complete').addEventListener('click', concluir);
+    document.getElementById('btn-retry-complete').addEventListener('click', concluir);
+
+    // Carrega sugestões assim que a etapa de cupom é alcançada pela primeira vez.
+    var sugestoesCarregadas = false;
+    var observer = new MutationObserver(function () {
+      var couponStep = document.getElementById('step-coupon');
+      if (!couponStep.hidden && !sugestoesCarregadas) {
+        sugestoesCarregadas = true;
+        carregarSugestoes();
+      }
+    });
+    observer.observe(document.getElementById('step-coupon'), { attributes: true, attributeFilter: ['hidden'] });
+
+    document.getElementById('progress').hidden = true;
+    iniciar();
+  </script>
+</body>
+</html>
