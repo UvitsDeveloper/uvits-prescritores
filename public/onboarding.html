@@ -441,6 +441,20 @@
       }
       try {
         var data = await apiFetch('/api/onboarding/status', { token: TOKEN });
+        // O servidor decide sozinho qual fluxo aplica (accessType) — nunca um
+        // parâmetro que este script escolhe. Link de acesso direto por
+        // e-mail (accessType "email_direct_access") já vem com a sessão
+        // pronta: pula direto pro passo de completar o cadastro, sem pedir
+        // código. Qualquer outro caso (convite externo/WhatsApp, ou
+        // resposta antiga sem accessType) continua no fluxo de código por
+        // e-mail de sempre.
+        if (data.accessType === 'email_direct_access' && data.sessionToken) {
+          sessionToken = data.sessionToken;
+          aplicarPerfilConhecido(data.profile);
+          showStep('profile');
+          document.getElementById('p-cpf').focus();
+          return;
+        }
         document.getElementById('masked-email').textContent = data.maskedEmail;
         document.getElementById('masked-email-2').textContent = data.maskedEmail;
         showStep('request-otp');

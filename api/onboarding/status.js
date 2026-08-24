@@ -2,10 +2,13 @@ const { registrarUso } = require('../_usage');
 const { limitarOnboardingLeitura } = require('../_ratelimit');
 const { consultarConvite } = require('../_onboardingSync');
 
-/** Passo 1-2 do onboarding por convite: confirma que o link ainda vale e
- * devolve só o e-mail mascarado. Nunca autentica o prescritor sozinho (o
- * código por e-mail continua obrigatório depois) — ver Worker,
- * src/prescriberOnboarding/otp.ts. */
+/** Passo 1-2 do onboarding: confirma que o link ainda vale. O Worker resolve
+ * sozinho, no servidor, se é um link de acesso direto por e-mail (accessType
+ * "email_direct_access" — devolve sessionToken/profile prontos, sem exigir
+ * código) ou um convite externo/WhatsApp (accessType "external_invite_access"
+ * — continua exigindo o código por e-mail depois). Este bridge só repassa o
+ * que o Worker decidiu; nunca decide nada sozinho — ver
+ * src/prescriberOnboarding/otp.ts (resolveOnboardingAccess). */
 module.exports = async function handler(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -33,5 +36,12 @@ module.exports = async function handler(req, res) {
   if (!resultado.ok) {
     return res.status(resultado.status || 502).json({ error: resultado.error, code: resultado.code });
   }
-  return res.status(200).json({ ok: true, maskedEmail: resultado.data.maskedEmail });
+  return res.status(200).json({
+    ok: true,
+    accessType: resultado.data.accessType,
+    maskedEmail: resultado.data.maskedEmail,
+    sessionToken: resultado.data.sessionToken,
+    expiresAt: resultado.data.expiresAt,
+    profile: resultado.data.profile,
+  });
 };
