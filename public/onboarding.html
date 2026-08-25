@@ -10,12 +10,14 @@
 
     :root {
       --primary:  #2EC4A5;
+      --primary-dark: #17a087;
       --dark:     #1C2620;
       --cream:    #F5F1EC;
       --border:   #E8E3DD;
       --text:     #5a6b5e;
       --primary-light: #e8faf6;
-      --danger: #c0392b;
+      --icon-bg:  #DEF6EF;
+      --danger:   #c0392b;
     }
 
     body {
@@ -31,14 +33,34 @@
 
     .page { width: 100%; max-width: 460px; }
 
-    .brand { text-align: center; margin-bottom: 20px; }
-    .brand__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--primary); }
+    /* ── cabeçalho da marca ── */
+    .brand { text-align: center; margin-bottom: 22px; }
+    .brand__logo {
+      width: 44px; height: 44px; margin: 0 auto 10px;
+      border-radius: 50%; background: var(--icon-bg); color: var(--primary-dark);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand__logo svg { width: 22px; height: 22px; }
+    .brand__name { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--primary-dark); }
     .brand__title { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; margin-top: 4px; }
 
     /* ── indicador de progresso ── */
-    .progress { display: flex; gap: 6px; margin-bottom: 20px; }
-    .progress__dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background-color .2s; }
-    .progress__dot.is-done, .progress__dot.is-active { background: var(--primary); }
+    .steps { display: flex; align-items: flex-start; margin-bottom: 22px; }
+    .steps__item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; width: 56px; }
+    .steps__circle {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--border);
+      color: var(--text); font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      transition: background-color .2s, border-color .2s, color .2s;
+    }
+    .steps__circle svg { width: 14px; height: 14px; }
+    .steps__label { font-size: 10px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .3px; }
+    .steps__line { flex: 1; height: 2px; background: var(--border); margin: 14px 2px 0; transition: background-color .2s; }
+    .steps__item.is-active .steps__circle { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .steps__item.is-active .steps__label { color: var(--dark); }
+    .steps__item.is-done .steps__circle { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .steps__line.is-done { background: var(--primary); }
 
     /* ── card (mesmo componente do formulário público) ── */
     .form-card {
@@ -50,6 +72,31 @@
     }
     .form-card__title { font-size: 18px; font-weight: 900; letter-spacing: -0.4px; margin-bottom: 4px; }
     .form-card__sub   { font-size: 13px; color: var(--text); margin-bottom: 20px; line-height: 1.55; }
+    .center-flow .form-card__title, .center-flow .form-card__sub { text-align: center; }
+
+    /* ── círculo de ícone (telas de e-mail/código) ── */
+    .icon-circle {
+      width: 56px; height: 56px; margin: 0 auto 16px;
+      border-radius: 50%; background: var(--icon-bg); color: var(--primary-dark);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon-circle svg { width: 26px; height: 26px; }
+
+    .reassurance-list { list-style: none; margin: 4px 0 20px; display: flex; flex-direction: column; gap: 10px; }
+    .reassurance-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: var(--text); line-height: 1.5; text-align: left; }
+    .reassurance-list svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: var(--primary); }
+
+    /* ── seções agrupadas do formulário ── */
+    .form-section { margin-bottom: 20px; }
+    .form-section + .form-section { border-top: 1px solid var(--border); padding-top: 18px; }
+    .form-section__header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .form-section__icon {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--icon-bg); color: var(--primary-dark);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .form-section__icon svg { width: 12px; height: 12px; }
+    .form-section__title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; color: var(--dark); }
 
     .field { margin-bottom: 14px; }
     .field label { display: block; font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 5px; letter-spacing: .3px; }
@@ -146,11 +193,17 @@
     .coupon-status.is-available { color: var(--primary); font-weight: 700; }
     .coupon-status.is-unavailable { color: var(--danger); font-weight: 700; }
 
-    .summary-list { list-style: none; margin-bottom: 18px; }
-    .summary-list li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-    .summary-list li:last-child { border-bottom: none; }
-    .summary-list dt, .summary-list .k { color: var(--text); }
-    .summary-list .v { font-weight: 700; text-align: right; }
+    /* ── cards de revisão ── */
+    .review-card { background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+    .review-card__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .review-card__header span { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; color: var(--dark); }
+    .review-edit-btn { background: none; border: none; color: var(--primary-dark); font-size: 12px; font-weight: 700; cursor: pointer; padding: 2px 4px; }
+    .review-edit-btn:hover { text-decoration: underline; }
+    .review-rows { list-style: none; }
+    .review-rows li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .review-rows li:last-child { border-bottom: none; }
+    .review-rows .k { color: var(--text); flex-shrink: 0; }
+    .review-rows .v { font-weight: 700; text-align: right; }
 
     .center-state { text-align: center; padding: 12px 0; }
     .center-state__icon { width: 44px; height: 44px; margin: 0 auto 14px; color: var(--primary); }
@@ -185,15 +238,21 @@
 <body>
   <div class="page">
     <div class="brand">
-      <div class="brand__eyebrow">Uvits Pro Prescritor</div>
-      <div class="brand__title">Completar cadastro</div>
+      <div class="brand__logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.5 1.75 3.5C7 8 17 8 17 8z"/></svg>
+      </div>
+      <div class="brand__name">Uvits Pro</div>
+      <div class="brand__title">Complete seu cadastro</div>
     </div>
 
-    <div class="progress" id="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-label="Etapas do cadastro">
-      <div class="progress__dot" data-step="1"></div>
-      <div class="progress__dot" data-step="2"></div>
-      <div class="progress__dot" data-step="3"></div>
-      <div class="progress__dot" data-step="4"></div>
+    <div class="steps" id="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-label="Etapas do cadastro">
+      <div class="steps__item" data-step="1"><div class="steps__circle">1</div><div class="steps__label">E-mail</div></div>
+      <div class="steps__line"></div>
+      <div class="steps__item" data-step="2"><div class="steps__circle">2</div><div class="steps__label">Dados</div></div>
+      <div class="steps__line"></div>
+      <div class="steps__item" data-step="3"><div class="steps__circle">3</div><div class="steps__label">Cupom</div></div>
+      <div class="steps__line"></div>
+      <div class="steps__item" data-step="4"><div class="steps__circle">4</div><div class="steps__label">Revisão</div></div>
     </div>
 
     <div class="form-card">
@@ -216,15 +275,25 @@
       </section>
 
       <!-- Passo 1: solicitar código -->
-      <section id="step-request-otp" hidden>
+      <section id="step-request-otp" class="center-flow" hidden>
+        <div class="icon-circle" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        </div>
         <p class="form-card__title">Confirme seu e-mail</p>
         <p class="form-card__sub">Vamos enviar um código de confirmação para <strong id="masked-email">—</strong>.</p>
+        <ul class="reassurance-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Seus dados ficam protegidos — o código só confirma que este e-mail é seu.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Leva menos de 2 minutos pra completar tudo.</span></li>
+        </ul>
         <div class="form-error" id="request-otp-error" hidden></div>
         <button class="btn-submit" id="btn-send-otp" type="button">Enviar código →</button>
       </section>
 
       <!-- Passo 1b: verificar código -->
-      <section id="step-verify-otp" hidden>
+      <section id="step-verify-otp" class="center-flow" hidden>
+        <div class="icon-circle" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
         <p class="form-card__title">Digite o código</p>
         <p class="form-card__sub">Enviamos um código de 6 dígitos para <strong id="masked-email-2">—</strong>. Ele vale por 10 minutos.</p>
         <div class="form-error" id="verify-otp-error" hidden></div>
@@ -242,81 +311,101 @@
         <p class="form-card__sub">Esses dados são necessários para ativar seu benefício.</p>
         <div class="form-error" id="profile-error" hidden></div>
         <p class="form-note" id="profile-locked-note" hidden>Os campos marcados com <strong>🔒</strong> já foram cadastrados pela nossa equipe e não podem ser alterados por aqui. Se algum estiver errado, fale com o suporte.</p>
+        <p class="form-note">Campos com <strong>*</strong> são obrigatórios.</p>
 
-        <div class="field">
-          <label for="p-nome">Nome completo * <span class="lock-badge" id="p-nome-lock" hidden>🔒</span></label>
-          <input type="text" id="p-nome" autocomplete="name">
-        </div>
-        <div class="field">
-          <label for="p-cpf">CPF *</label>
-          <input type="text" id="p-cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00">
-        </div>
-        <div class="field field--half">
-          <div>
-            <label for="p-whatsapp">WhatsApp *</label>
-            <input type="text" id="p-whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999">
+        <div class="form-section">
+          <div class="form-section__header">
+            <div class="form-section__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+            <span class="form-section__title">Dados pessoais</span>
           </div>
-          <div>
-            <label for="p-data-nascimento">Data de nascimento *</label>
-            <input type="date" id="p-data-nascimento" autocomplete="bday">
+          <div class="field">
+            <label for="p-nome">Nome completo * <span class="lock-badge" id="p-nome-lock" hidden>🔒</span></label>
+            <input type="text" id="p-nome" autocomplete="name">
           </div>
-        </div>
-        <div class="checkbox-field">
-          <input type="checkbox" id="p-whatsapp-consent">
-          <label for="p-whatsapp-consent">Aceito receber mensagens sobre o programa pelo WhatsApp.</label>
-        </div>
-        <div class="field field--half">
-          <div>
-            <label for="p-profissao">Profissão * <span class="lock-badge" id="p-profissao-lock" hidden>🔒</span></label>
-            <select id="p-profissao">
-              <option value="">Selecione</option>
-              <option value="Médico(a)">Médico(a)</option>
-              <option value="Nutricionista">Nutricionista</option>
-            </select>
+          <div class="field">
+            <label for="p-cpf">CPF *</label>
+            <input type="text" id="p-cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00">
           </div>
-          <div>
-            <label for="p-conselho">Nº do conselho * <span class="lock-badge" id="p-conselho-lock" hidden>🔒</span></label>
-            <input type="text" id="p-conselho" placeholder="CRM ou CRN">
+          <div class="field field--half">
+            <div>
+              <label for="p-whatsapp">WhatsApp *</label>
+              <input type="text" id="p-whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999">
+            </div>
+            <div>
+              <label for="p-data-nascimento">Data de nascimento *</label>
+              <input type="date" id="p-data-nascimento" autocomplete="bday">
+            </div>
+          </div>
+          <div class="checkbox-field">
+            <input type="checkbox" id="p-whatsapp-consent">
+            <label for="p-whatsapp-consent">Aceito receber mensagens sobre o programa pelo WhatsApp.</label>
           </div>
         </div>
 
-        <div class="field field--third">
-          <div>
-            <label for="p-cep">CEP *</label>
-            <input type="text" id="p-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000">
+        <div class="form-section">
+          <div class="form-section__header">
+            <div class="form-section__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1zM9 5h6v2H9z"/></svg></div>
+            <span class="form-section__title">Dados profissionais</span>
           </div>
-          <div>
-            <label for="p-numero">Número *</label>
-            <input type="text" id="p-numero" autocomplete="address-line2">
+          <div class="field field--half">
+            <div>
+              <label for="p-profissao">Profissão * <span class="lock-badge" id="p-profissao-lock" hidden>🔒</span></label>
+              <select id="p-profissao">
+                <option value="">Selecione</option>
+                <option value="Médico(a)">Médico(a)</option>
+                <option value="Nutricionista">Nutricionista</option>
+              </select>
+            </div>
+            <div>
+              <label for="p-conselho">Nº do conselho * <span class="lock-badge" id="p-conselho-lock" hidden>🔒</span></label>
+              <input type="text" id="p-conselho" placeholder="CRM ou CRN">
+            </div>
           </div>
-        </div>
-        <div class="field">
-          <label for="p-rua">Rua *</label>
-          <input type="text" id="p-rua" autocomplete="address-line1">
-        </div>
-        <div class="field field--half">
-          <div>
-            <label for="p-complemento">Complemento</label>
-            <input type="text" id="p-complemento">
-          </div>
-          <div>
-            <label for="p-bairro">Bairro *</label>
-            <input type="text" id="p-bairro">
-          </div>
-        </div>
-        <div class="field field--third">
-          <div>
-            <label for="p-cidade">Cidade *</label>
-            <input type="text" id="p-cidade" autocomplete="address-level2">
-          </div>
-          <div>
-            <label for="p-uf">UF *</label>
-            <input type="text" id="p-uf" maxlength="2" autocomplete="address-level1" style="text-transform:uppercase">
+          <div class="field">
+            <label for="p-instagram">Instagram <span style="font-weight:400;color:var(--text)">(opcional)</span></label>
+            <input type="text" id="p-instagram" placeholder="@seuperfil">
           </div>
         </div>
-        <div class="field">
-          <label for="p-instagram">Instagram <span style="font-weight:400;color:var(--text)">(opcional)</span></label>
-          <input type="text" id="p-instagram" placeholder="@seuperfil">
+
+        <div class="form-section">
+          <div class="form-section__header">
+            <div class="form-section__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s-8-6.5-8-12a8 8 0 0 1 16 0c0 5.5-8 12-8 12z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <span class="form-section__title">Endereço</span>
+          </div>
+          <div class="field field--third">
+            <div>
+              <label for="p-cep">CEP *</label>
+              <input type="text" id="p-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000">
+            </div>
+            <div>
+              <label for="p-numero">Número *</label>
+              <input type="text" id="p-numero" autocomplete="address-line2">
+            </div>
+          </div>
+          <div class="field">
+            <label for="p-rua">Rua *</label>
+            <input type="text" id="p-rua" autocomplete="address-line1">
+          </div>
+          <div class="field field--half">
+            <div>
+              <label for="p-complemento">Complemento</label>
+              <input type="text" id="p-complemento">
+            </div>
+            <div>
+              <label for="p-bairro">Bairro *</label>
+              <input type="text" id="p-bairro">
+            </div>
+          </div>
+          <div class="field field--third">
+            <div>
+              <label for="p-cidade">Cidade *</label>
+              <input type="text" id="p-cidade" autocomplete="address-level2">
+            </div>
+            <div>
+              <label for="p-uf">UF *</label>
+              <input type="text" id="p-uf" maxlength="2" autocomplete="address-level1" style="text-transform:uppercase">
+            </div>
+          </div>
         </div>
 
         <button class="btn-submit" id="btn-save-profile" type="button">Continuar →</button>
@@ -347,7 +436,23 @@
         <p class="form-card__title">Confira e conclua</p>
         <p class="form-card__sub">Revise seus dados antes de concluir o cadastro.</p>
         <div class="form-error" id="review-error" hidden></div>
-        <ul class="summary-list" id="review-list"></ul>
+
+        <div class="review-card">
+          <div class="review-card__header">
+            <span>Seus dados</span>
+            <button type="button" class="review-edit-btn" id="btn-edit-profile">Editar</button>
+          </div>
+          <ul class="review-rows" id="review-profile-list"></ul>
+        </div>
+
+        <div class="review-card">
+          <div class="review-card__header">
+            <span>Seu cupom selecionado</span>
+            <button type="button" class="review-edit-btn" id="btn-edit-coupon">Editar</button>
+          </div>
+          <ul class="review-rows" id="review-coupon-list"></ul>
+        </div>
+
         <button class="btn-submit" id="btn-complete" type="button">Concluir cadastro</button>
       </section>
 
@@ -374,15 +479,19 @@
 
   <script>
     var TOKEN = decodeURIComponent((window.location.pathname.split('/onboarding/')[1] || '').split('/')[0] || '');
+    var STORAGE_KEY = TOKEN ? ('onboarding:state:' + TOKEN) : null;
     var sessionToken = null;
     var reservedCoupon = null;
     var resendCooldownTimer = null;
+    var perfilConhecidoAtual = null;
+    var retornarParaRevisao = false;
 
     var live = document.getElementById('live-region');
     function announce(msg) { live.textContent = msg; }
 
     var STEPS = ['loading', 'invalid', 'request-otp', 'verify-otp', 'profile', 'coupon', 'review', 'success', 'retry'];
     var PROGRESS_BY_STEP = { 'request-otp': 1, 'verify-otp': 1, profile: 2, coupon: 3, review: 4, success: 4 };
+    var CHECK_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
 
     function showStep(name) {
       STEPS.forEach(function (s) {
@@ -394,10 +503,15 @@
       if (current) {
         progressEl.hidden = false;
         progressEl.setAttribute('aria-valuenow', String(current));
-        Array.prototype.forEach.call(progressEl.querySelectorAll('.progress__dot'), function (dot) {
-          var i = Number(dot.dataset.step);
-          dot.classList.toggle('is-done', i < current);
-          dot.classList.toggle('is-active', i === current);
+        Array.prototype.forEach.call(progressEl.querySelectorAll('.steps__item'), function (item) {
+          var i = Number(item.dataset.step);
+          var done = i < current;
+          item.classList.toggle('is-done', done);
+          item.classList.toggle('is-active', i === current);
+          item.querySelector('.steps__circle').innerHTML = done ? CHECK_ICON_SVG : String(i);
+        });
+        Array.prototype.forEach.call(progressEl.querySelectorAll('.steps__line'), function (line, idx) {
+          line.classList.toggle('is-done', (idx + 1) < current);
         });
       } else {
         progressEl.hidden = true;
@@ -412,6 +526,39 @@
     }
     function hideError(fieldId) {
       document.getElementById(fieldId).hidden = true;
+    }
+
+    // ── Retomada de progresso (sessionStorage, escopado pelo token da URL) ──
+    // sessionStorage (não localStorage) de propósito: expira ao fechar a
+    // aba, reduzindo a janela de exposição do sessionToken salvo.
+    function salvarEstado(step) {
+      if (!STORAGE_KEY) return;
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+          sessionToken: sessionToken,
+          step: step,
+          dadosPerfil: dadosPerfil,
+          reservedCoupon: reservedCoupon,
+          perfilConhecido: perfilConhecidoAtual,
+        }));
+      } catch (e) { /* sessionStorage indisponível (ex.: modo privado) — segue sem retomada */ }
+    }
+    function limparEstado() {
+      if (!STORAGE_KEY) return;
+      try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    }
+    function carregarEstado() {
+      if (!STORAGE_KEY) return null;
+      try {
+        var raw = sessionStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+
+    function irParaInvalido(msg) {
+      document.getElementById('invalid-message').textContent = msg;
+      limparEstado();
+      showStep('invalid');
     }
 
     async function apiFetch(path, body) {
@@ -432,13 +579,43 @@
       return data;
     }
 
-    // ── Passo inicial: validar o convite ──
+    // ── Passo inicial: validar o convite (ou retomar de onde parou) ──
     async function iniciar() {
       if (!TOKEN) {
-        document.getElementById('invalid-message').textContent = 'Link incompleto. Verifique se copiou o link inteiro.';
-        showStep('invalid');
+        irParaInvalido('Link incompleto. Verifique se copiou o link inteiro.');
         return;
       }
+
+      var estadoSalvo = carregarEstado();
+      if (estadoSalvo && estadoSalvo.sessionToken && estadoSalvo.step) {
+        // Retomada local: pula direto pro passo salvo, sem re-consultar o
+        // status no servidor. A validade real da sessão é confirmada de
+        // forma preguiçosa na próxima ação real — os handlers de erro que
+        // já existem (SESSION_NOT_USABLE/INVITE_NOT_USABLE) continuam
+        // sendo o mecanismo de fallback caso a sessão tenha expirado.
+        var estadoConsistente =
+          (estadoSalvo.step === 'profile') ||
+          (estadoSalvo.step === 'coupon' && estadoSalvo.dadosPerfil) ||
+          (estadoSalvo.step === 'review' && estadoSalvo.dadosPerfil && estadoSalvo.reservedCoupon);
+
+        if (estadoConsistente) {
+          sessionToken = estadoSalvo.sessionToken;
+          dadosPerfil = estadoSalvo.dadosPerfil || null;
+          reservedCoupon = estadoSalvo.reservedCoupon || null;
+          perfilConhecidoAtual = estadoSalvo.perfilConhecido || null;
+
+          if (estadoSalvo.step === 'profile') {
+            if (perfilConhecidoAtual) aplicarPerfilConhecido(perfilConhecidoAtual);
+            if (dadosPerfil) preencherFormulario(dadosPerfil);
+          } else if (estadoSalvo.step === 'review') {
+            montarRevisao();
+          }
+          showStep(estadoSalvo.step);
+          return;
+        }
+        limparEstado();
+      }
+
       try {
         var data = await apiFetch('/api/onboarding/status', { token: TOKEN });
         // O servidor decide sozinho qual fluxo aplica (accessType) — nunca um
@@ -452,6 +629,7 @@
           sessionToken = data.sessionToken;
           aplicarPerfilConhecido(data.profile);
           showStep('profile');
+          salvarEstado('profile');
           document.getElementById('p-cpf').focus();
           return;
         }
@@ -459,8 +637,7 @@
         document.getElementById('masked-email-2').textContent = data.maskedEmail;
         showStep('request-otp');
       } catch (e) {
-        document.getElementById('invalid-message').textContent = e.message;
-        showStep('invalid');
+        irParaInvalido(e.message);
       }
     }
 
@@ -486,8 +663,7 @@
         btn.disabled = false;
         btn.textContent = textoOriginal;
         if (e.code === 'MAX_RESENDS_EXCEEDED' || e.code === 'PRESCRIBER_EMAIL_INVALID' || e.code === 'EMAIL_UNAVAILABLE') {
-          document.getElementById('invalid-message').textContent = e.message;
-          showStep('invalid');
+          irParaInvalido(e.message);
         }
       }
     }
@@ -527,6 +703,7 @@
         sessionToken = data.sessionToken;
         aplicarPerfilConhecido(data.profile);
         showStep('profile');
+        salvarEstado('profile');
         document.getElementById('p-cpf').focus();
       } catch (e) {
         var msg = e.message;
@@ -537,8 +714,7 @@
         }
         showError('verify-otp-error', msg);
         if (e.code === 'INVITE_NOT_USABLE' || e.code === 'EXPIRED') {
-          document.getElementById('invalid-message').textContent = e.message;
-          showStep('invalid');
+          irParaInvalido(e.message);
         }
       } finally {
         btn.disabled = false;
@@ -604,6 +780,7 @@
     }
 
     function aplicarPerfilConhecido(profile) {
+      perfilConhecidoAtual = profile || null;
       if (!profile) return;
       var algumTravado = false;
       // Nome nunca vem vazio (obrigatório desde a criação do cadastro).
@@ -624,6 +801,28 @@
       if (profile.enderecoCidade) document.getElementById('p-cidade').value = profile.enderecoCidade;
       if (profile.enderecoUf) document.getElementById('p-uf').value = profile.enderecoUf;
       if (profile.instagram) document.getElementById('p-instagram').value = profile.instagram;
+    }
+
+    // Repõe no formulário os dados já digitados/enviados pelo prescritor —
+    // inversa de coletarPerfil(). Usada tanto pra retomada via sessionStorage
+    // quanto pelo link "Editar" na tela de revisão.
+    function preencherFormulario(dados) {
+      if (!dados) return;
+      document.getElementById('p-nome').value = dados.nome || '';
+      document.getElementById('p-cpf').value = mascaraCpf(dados.cpf || '');
+      document.getElementById('p-whatsapp').value = mascaraWhatsapp(dados.whatsapp || '');
+      document.getElementById('p-whatsapp-consent').checked = !!dados.whatsappConsent;
+      if (dados.profissao) document.getElementById('p-profissao').value = dados.profissao;
+      document.getElementById('p-conselho').value = dados.conselho || '';
+      document.getElementById('p-data-nascimento').value = dados.dataNascimento || '';
+      document.getElementById('p-cep').value = mascaraCep(dados.enderecoCep || '');
+      document.getElementById('p-rua').value = dados.enderecoRua || '';
+      document.getElementById('p-numero').value = dados.enderecoNumero || '';
+      document.getElementById('p-complemento').value = dados.enderecoComplemento || '';
+      document.getElementById('p-bairro').value = dados.enderecoBairro || '';
+      document.getElementById('p-cidade').value = dados.enderecoCidade || '';
+      document.getElementById('p-uf').value = dados.enderecoUf || '';
+      document.getElementById('p-instagram').value = dados.instagram || '';
     }
 
     var dadosPerfil = null;
@@ -668,13 +867,20 @@
       try {
         await apiFetch('/api/onboarding/profile', Object.assign({ sessionToken: sessionToken }, dados));
         dadosPerfil = dados;
-        showStep('coupon');
-        document.getElementById('coupon-code').focus();
+        if (retornarParaRevisao) {
+          retornarParaRevisao = false;
+          montarRevisao();
+          showStep('review');
+          salvarEstado('review');
+        } else {
+          showStep('coupon');
+          salvarEstado('coupon');
+          document.getElementById('coupon-code').focus();
+        }
       } catch (e) {
         showError('profile-error', e.message);
         if (e.code === 'SESSION_NOT_USABLE' || e.code === 'INVITE_NOT_USABLE') {
-          document.getElementById('invalid-message').textContent = 'Sua sessão expirou. Volte ao link do convite e confirme o código novamente.';
-          showStep('invalid');
+          irParaInvalido('Sua sessão expirou. Volte ao link do convite e confirme o código novamente.');
         }
       } finally {
         btn.disabled = false;
@@ -754,8 +960,10 @@
       try {
         var data = await apiFetch('/api/onboarding/coupon-reserve', { sessionToken: sessionToken, code: code });
         reservedCoupon = data;
+        retornarParaRevisao = false;
         montarRevisao();
         showStep('review');
+        salvarEstado('review');
       } catch (e) {
         showError('coupon-error', e.message);
         document.getElementById('coupon-status').textContent = '';
@@ -766,18 +974,24 @@
     }
 
     function montarRevisao() {
-      var list = document.getElementById('review-list');
-      var itens = [
+      var enderecoLinha1 = dadosPerfil.enderecoRua + ', ' + dadosPerfil.enderecoNumero + (dadosPerfil.enderecoComplemento ? ' - ' + dadosPerfil.enderecoComplemento : '');
+      var enderecoLinha2 = dadosPerfil.enderecoBairro + ' - ' + dadosPerfil.enderecoCidade + '/' + dadosPerfil.enderecoUf + ' - CEP ' + dadosPerfil.enderecoCep;
+      var itensPerfil = [
         ['Nome', dadosPerfil.nome],
+        ['CPF', dadosPerfil.cpf],
         ['WhatsApp', dadosPerfil.whatsapp],
         ['Profissão', dadosPerfil.profissao],
         ['Conselho', dadosPerfil.conselho],
-        ['Endereço', dadosPerfil.enderecoRua + ', ' + dadosPerfil.enderecoNumero + ' — ' + dadosPerfil.enderecoCidade + '/' + dadosPerfil.enderecoUf],
-        ['Cupom escolhido', reservedCoupon.code],
+        ['Endereço', enderecoLinha1 + ', ' + enderecoLinha2],
       ];
-      list.innerHTML = itens.map(function (item) {
+      if (dadosPerfil.instagram) itensPerfil.push(['Instagram', dadosPerfil.instagram]);
+
+      document.getElementById('review-profile-list').innerHTML = itensPerfil.map(function (item) {
         return '<li><span class="k">' + item[0] + '</span><span class="v">' + escapeHtml(item[1]) + '</span></li>';
       }).join('');
+
+      document.getElementById('review-coupon-list').innerHTML =
+        '<li><span class="k">Código</span><span class="v">' + escapeHtml(reservedCoupon.code) + '</span></li>';
     }
 
     function escapeHtml(v) {
@@ -795,6 +1009,7 @@
         if (data.activated) {
           document.getElementById('success-text').textContent =
             'Seu cupom "' + data.coupon.code + '" já está pronto para compartilhar com seus pacientes.';
+          limparEstado();
           showStep('success');
         } else {
           showStep('retry');
@@ -831,6 +1046,22 @@
     document.getElementById('btn-reserve-coupon').addEventListener('click', reservarCupomEscolhido);
     document.getElementById('btn-complete').addEventListener('click', concluir);
     document.getElementById('btn-retry-complete').addEventListener('click', concluir);
+
+    // "Editar" na revisão: escopo contido — só esses dois links voltam pra
+    // uma etapa anterior, pré-preenchida, e retornam pra revisão ao confirmar.
+    document.getElementById('btn-edit-profile').addEventListener('click', function () {
+      retornarParaRevisao = true;
+      preencherFormulario(dadosPerfil);
+      showStep('profile');
+    });
+    document.getElementById('btn-edit-coupon').addEventListener('click', function () {
+      var input = document.getElementById('coupon-code');
+      input.value = reservedCoupon.code;
+      document.getElementById('coupon-status').textContent = '';
+      document.getElementById('coupon-status').className = 'coupon-status';
+      document.getElementById('btn-reserve-coupon').disabled = false;
+      showStep('coupon');
+    });
 
     // Carrega sugestões assim que a etapa de cupom é alcançada pela primeira vez.
     var sugestoesCarregadas = false;
