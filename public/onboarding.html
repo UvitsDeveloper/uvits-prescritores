@@ -181,6 +181,13 @@
       padding: 14px 10px 14px 20px;
     }
 
+    .coupon-code-wrap { position: relative; }
+    .coupon-code-wrap input { padding-right: 42px; }
+    .coupon-code-suffix {
+      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      font-size: 15px; font-weight: 800; color: var(--text); pointer-events: none;
+    }
+
     .coupon-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
     .coupon-suggestion {
       border: 1px solid var(--border); background: var(--cream);
@@ -344,7 +351,7 @@
 
         <div class="form-section">
           <div class="form-section__header">
-            <div class="form-section__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1zM9 5h6v2H9z"/></svg></div>
+            <div class="form-section__icon" aria-hidden="true"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.37-4.89,8,8,0,0,1,0-6.22A8,8,0,0,1,192,112a24,24,0,1,0-23.24-30,8,8,0,1,1-15.5-4A40,40,0,1,1,219,117.51a67.94,67.94,0,0,1,27.43,21.68A8,8,0,0,1,244.8,150.4ZM190.92,212a8,8,0,1,1-13.84,8,57,57,0,0,0-98.16,0,8,8,0,1,1-13.84-8,72.06,72.06,0,0,1,33.74-29.92,48,48,0,1,1,58.36,0A72.06,72.06,0,0,1,190.92,212ZM128,176a32,32,0,1,0-32-32A32,32,0,0,0,128,176ZM72,120a8,8,0,0,0-8-8A24,24,0,1,1,87.24,82a8,8,0,1,0,15.5-4A40,40,0,1,0,37,117.51,67.94,67.94,0,0,0,9.6,139.19a8,8,0,1,0,12.8,9.61A51.6,51.6,0,0,1,64,128,8,8,0,0,0,72,120Z"/></svg></div>
             <span class="form-section__title">Dados profissionais</span>
           </div>
           <div class="field field--half">
@@ -376,6 +383,7 @@
             <div>
               <label for="p-cep">CEP *</label>
               <input type="text" id="p-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000">
+              <p class="field-hint" id="cep-status" aria-live="polite"></p>
             </div>
             <div>
               <label for="p-numero">Número *</label>
@@ -419,7 +427,11 @@
 
         <div class="field">
           <label for="coupon-code">Código do cupom *</label>
-          <input type="text" id="coupon-code" placeholder="Ex: DRJOAO10" maxlength="30" autocomplete="off" style="text-transform:uppercase">
+          <div class="coupon-code-wrap">
+            <input type="text" id="coupon-code" placeholder="Ex: DRJOAO" maxlength="28" autocomplete="off" style="text-transform:uppercase">
+            <span class="coupon-code-suffix" aria-hidden="true">10</span>
+          </div>
+          <p class="field-hint">Só letras — o cupom sempre termina em <strong>10</strong>, referente aos 10% de desconto e ao padrão usado em todos os cupons do site.</p>
           <p class="coupon-status" id="coupon-status" aria-live="polite"></p>
         </div>
 
@@ -734,6 +746,37 @@
       v = String(v).replace(/\D/g, '').slice(0, 8);
       return v.length > 5 ? v.slice(0, 5) + '-' + v.slice(5) : v;
     }
+
+    // ── Busca automática de endereço pelo CEP (ViaCEP) ──
+    // Só preenche rua/bairro/cidade/UF — número e complemento continuam
+    // sempre digitados pelo prescritor. Falha (CEP inexistente, API fora do
+    // ar) nunca bloqueia o fluxo: o prescritor sempre pode preencher tudo
+    // manualmente, exatamente como antes desta melhoria.
+    var cepFetchToken = 0;
+    async function autoPreencherEndereco() {
+      var digits = document.getElementById('p-cep').value.replace(/\D/g, '');
+      var statusEl = document.getElementById('cep-status');
+      if (digits.length !== 8) { statusEl.textContent = ''; return; }
+      var meuToken = ++cepFetchToken;
+      statusEl.textContent = 'Buscando endereço…';
+      try {
+        var res = await fetch('https://viacep.com.br/ws/' + digits + '/json/');
+        var data = await res.json();
+        if (meuToken !== cepFetchToken) return; // CEP mudou de novo enquanto buscava
+        if (data.erro) {
+          statusEl.textContent = 'CEP não encontrado — preencha o endereço manualmente.';
+          return;
+        }
+        if (data.logradouro) document.getElementById('p-rua').value = data.logradouro;
+        if (data.bairro) document.getElementById('p-bairro').value = data.bairro;
+        if (data.localidade) document.getElementById('p-cidade').value = data.localidade;
+        if (data.uf) document.getElementById('p-uf').value = data.uf;
+        statusEl.textContent = '';
+        document.getElementById('p-numero').focus();
+      } catch (e) {
+        if (meuToken === cepFetchToken) statusEl.textContent = '';
+      }
+    }
     function mascaraCpf(v) {
       v = String(v).replace(/\D/g, '').slice(0, 11);
       if (v.length <= 3) return v;
@@ -889,18 +932,27 @@
     }
 
     // ── Cupom: disponibilidade (debounced), sugestões, reserva ──
+    // Só letras no campo digitado — o código final sempre ganha o sufixo
+    // fixo "10" (10% de desconto, padrão de todos os cupons do site), nunca
+    // digitado pelo prescritor. codigoCupomCompleto() é o valor de verdade
+    // enviado em toda chamada à API.
+    function codigoCupomCompleto() {
+      var prefixo = document.getElementById('coupon-code').value.trim();
+      return prefixo ? prefixo + '10' : '';
+    }
+
     var couponDebounce = null;
     function onCouponInput() {
       var input = document.getElementById('coupon-code');
-      input.value = input.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      input.value = input.value.toUpperCase().replace(/[^A-Z]/g, '');
       document.getElementById('btn-reserve-coupon').disabled = true;
       var statusEl = document.getElementById('coupon-status');
       statusEl.textContent = '';
       statusEl.className = 'coupon-status';
       clearTimeout(couponDebounce);
-      var code = input.value.trim();
-      if (code.length < 3) return;
-      couponDebounce = setTimeout(function () { verificarDisponibilidadeCupom(code); }, 450);
+      var prefixo = input.value.trim();
+      if (prefixo.length < 1) return;
+      couponDebounce = setTimeout(function () { verificarDisponibilidadeCupom(codigoCupomCompleto()); }, 450);
     }
 
     async function verificarDisponibilidadeCupom(code) {
@@ -909,7 +961,7 @@
       statusEl.className = 'coupon-status';
       try {
         var data = await apiFetch('/api/onboarding/coupon-availability', { sessionToken: sessionToken, code: code });
-        if (document.getElementById('coupon-code').value.trim() !== code) return; // resposta desatualizada
+        if (codigoCupomCompleto() !== code) return; // resposta desatualizada
         if (data.available) {
           statusEl.textContent = 'Disponível!';
           statusEl.className = 'coupon-status is-available';
@@ -932,19 +984,27 @@
         var container = document.getElementById('coupon-suggestions');
         if (!data.suggestions || !data.suggestions.length) { wrap.hidden = true; return; }
         container.innerHTML = '';
+        // As sugestões do servidor podem vir com sufixos numéricos variados
+        // (ex.: "JOAO01") — aqui extraímos só a parte de letras e sempre
+        // exibimos com o sufixo fixo "10", já revalidado no clique.
+        var prefixosVistos = {};
         data.suggestions.forEach(function (s) {
+          var prefixo = String(s).toUpperCase().replace(/[^A-Z]/g, '');
+          if (!prefixo || prefixosVistos[prefixo]) return;
+          prefixosVistos[prefixo] = true;
+          var codigoSugerido = prefixo + '10';
           var btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'coupon-suggestion';
-          btn.textContent = s;
+          btn.textContent = codigoSugerido;
           btn.addEventListener('click', function () {
-            document.getElementById('coupon-code').value = s;
+            document.getElementById('coupon-code').value = prefixo;
             onCouponInput();
-            verificarDisponibilidadeCupom(s);
+            verificarDisponibilidadeCupom(codigoSugerido);
           });
           container.appendChild(btn);
         });
-        wrap.hidden = false;
+        wrap.hidden = container.children.length === 0;
       } catch (e) {
         // sugestão é só conveniência — falha aqui não bloqueia o fluxo
       }
@@ -952,7 +1012,7 @@
 
     async function reservarCupomEscolhido() {
       hideError('coupon-error');
-      var code = document.getElementById('coupon-code').value.trim();
+      var code = codigoCupomCompleto();
       if (!code) return;
       var btn = document.getElementById('btn-reserve-coupon');
       btn.disabled = true;
@@ -1039,7 +1099,7 @@
       if (e.key === 'Enter') verificarCodigo();
     });
     document.getElementById('p-whatsapp').addEventListener('input', function (e) { e.target.value = mascaraWhatsapp(e.target.value); });
-    document.getElementById('p-cep').addEventListener('input', function (e) { e.target.value = mascaraCep(e.target.value); });
+    document.getElementById('p-cep').addEventListener('input', function (e) { e.target.value = mascaraCep(e.target.value); autoPreencherEndereco(); });
     document.getElementById('p-cpf').addEventListener('input', function (e) { e.target.value = mascaraCpf(e.target.value); });
     document.getElementById('btn-save-profile').addEventListener('click', salvarPerfil);
     document.getElementById('coupon-code').addEventListener('input', onCouponInput);
@@ -1056,7 +1116,7 @@
     });
     document.getElementById('btn-edit-coupon').addEventListener('click', function () {
       var input = document.getElementById('coupon-code');
-      input.value = reservedCoupon.code;
+      input.value = String(reservedCoupon.code).replace(/10$/, '');
       document.getElementById('coupon-status').textContent = '';
       document.getElementById('coupon-status').className = 'coupon-status';
       document.getElementById('btn-reserve-coupon').disabled = false;
