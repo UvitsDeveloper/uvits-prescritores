@@ -10,7 +10,8 @@ const TIMEOUT_MS = 8000;
 async function chamarWorker(path, body) {
   const serviceKey = process.env.SHOPIFY_SYNC_SERVICE_KEY;
   if (!serviceKey) {
-    return { ok: false, error: 'SHOPIFY_SYNC_SERVICE_KEY não configurada' };
+    console.error('[shopifySync] SHOPIFY_SYNC_SERVICE_KEY não configurada');
+    return { ok: false, error: 'Não foi possível concluir agora. Tente novamente.' };
   }
 
   const controller = new AbortController();
@@ -30,13 +31,18 @@ async function chamarWorker(path, body) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      const detalhe = data?.detail || data?.error || '';
-      return { ok: false, status: response.status, mensagem: data?.error, error: `Worker respondeu ${response.status}${detalhe ? ': ' + detalhe : ''}` };
+      // data?.detail pode conter o texto técnico bruto de um erro da
+      // Shopify (o Worker só o inclui pra staff, não pra prescritor) — loga
+      // aqui, nunca repassa pro navegador. `mensagem`/`error` continuam
+      // sendo o texto já pensado pra usuário final que o Worker devolveu.
+      if (data?.detail) console.error('[shopifySync] detalhe técnico do Worker:', data.detail);
+      return { ok: false, status: response.status, mensagem: data?.error, error: data?.error || 'Não foi possível concluir agora. Tente novamente.' };
     }
 
     return { ok: true, data };
   } catch (err) {
-    return { ok: false, error: `Falha ao chamar o Worker: ${err.message}` };
+    console.error('[shopifySync] falha ao chamar o Worker:', err.message);
+    return { ok: false, error: 'Não foi possível concluir agora. Tente novamente.' };
   } finally {
     clearTimeout(timeout);
   }

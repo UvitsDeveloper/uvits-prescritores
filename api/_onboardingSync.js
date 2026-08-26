@@ -14,7 +14,8 @@ const TIMEOUT_MS = 8000;
 async function chamarWorkerOnboarding(path, body, ip) {
   const serviceKey = process.env.SHOPIFY_SYNC_SERVICE_KEY;
   if (!serviceKey) {
-    return { ok: false, error: 'SHOPIFY_SYNC_SERVICE_KEY não configurada' };
+    console.error('[onboardingSync] SHOPIFY_SYNC_SERVICE_KEY não configurada');
+    return { ok: false, error: 'Não foi possível concluir agora. Tente novamente.' };
   }
 
   const controller = new AbortController();
@@ -53,7 +54,10 @@ async function chamarWorkerOnboarding(path, body, ip) {
 
     return { ok: true, data };
   } catch (err) {
-    return { ok: false, error: `Falha ao chamar o Worker: ${err.message}` };
+    // Nunca a mensagem técnica crua (rede/timeout/DNS) pro navegador — só
+    // logada aqui, mesmo padrão já usado em api/prescritores.js.
+    console.error('[onboardingSync] falha ao chamar o Worker:', err.message);
+    return { ok: false, error: 'Não foi possível concluir agora. Tente novamente.' };
   } finally {
     clearTimeout(timeout);
   }

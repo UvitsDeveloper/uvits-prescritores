@@ -102,7 +102,10 @@
       padding: 12px 13px;
       border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 15px;
+      /* 16px é o limiar mínimo pra Safari iOS não aplicar zoom automático
+         ao focar o campo — abaixo disso, focar qualquer input dá um zoom
+         brusco na tela inteira. */
+      font-size: 16px;
       color: var(--dark);
       background: #fff;
       outline: none;
@@ -332,7 +335,7 @@
             </div>
             <div>
               <label for="p-data-nascimento">Data de nascimento *</label>
-              <input type="date" id="p-data-nascimento" autocomplete="bday">
+              <input type="text" id="p-data-nascimento" inputmode="numeric" autocomplete="bday" placeholder="DD/MM/AAAA" maxlength="10">
             </div>
           </div>
           <div class="checkbox-field">
@@ -793,6 +796,49 @@
       return d === d.slice(0, 9) + String(d1) + String(d2);
     }
 
+    // ── Data de nascimento: texto mascarado DD/MM/AAAA em vez de
+    // <input type="date"> nativo. O widget nativo de data tem comportamento
+    // muito inconsistente entre navegadores (aparece vazio/menor no Safari
+    // iOS, layout diferente no macOS) — a mesma técnica de máscara já usada
+    // pra CPF/CEP/WhatsApp neste arquivo resolve isso sem depender de
+    // nenhum widget nativo. O backend continua recebendo AAAA-MM-DD
+    // (dataParaIso converte só na hora de montar o payload) — nenhum
+    // contrato muda.
+    function mascaraData(v) {
+      v = String(v).replace(/\D/g, '').slice(0, 8);
+      if (v.length <= 2) return v;
+      if (v.length <= 4) return v.slice(0, 2) + '/' + v.slice(2);
+      return v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4);
+    }
+    // DD/MM/AAAA -> AAAA-MM-DD (formato que o backend sempre esperou).
+    // Devolve '' se o texto não tiver os 8 dígitos esperados — a validação
+    // de verdade (calendário, faixa plausível) é feita por validarDataCliente.
+    function dataParaIso(v) {
+      var d = String(v).replace(/\D/g, '');
+      if (d.length !== 8) return '';
+      return d.slice(4, 8) + '-' + d.slice(2, 4) + '-' + d.slice(0, 2);
+    }
+    // AAAA-MM-DD -> DD/MM/AAAA — usado só pra pré-preencher o campo quando
+    // o admin já tinha cadastrado uma data antes (o backend sempre guarda
+    // nesse formato).
+    function isoParaData(v) {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || ''));
+      return m ? m[3] + '/' + m[2] + '/' + m[1] : '';
+    }
+    // Checa dia/mês/ano de calendário de verdade (não só o formato) e uma
+    // faixa plausível de nascimento — feedback antes de enviar; a validação
+    // real continua sendo sempre do Worker.
+    function validarDataCliente(v) {
+      var d = String(v).replace(/\D/g, '');
+      if (d.length !== 8) return false;
+      var dia = Number(d.slice(0, 2)), mes = Number(d.slice(2, 4)), ano = Number(d.slice(4, 8));
+      var anoMin = new Date().getFullYear() - 120;
+      var anoMax = new Date().getFullYear();
+      if (ano < anoMin || ano > anoMax) return false;
+      var data = new Date(ano, mes - 1, dia);
+      return data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia;
+    }
+
     // Pré-preenche com o que o admin já cadastrou e trava nome/profissão/
     // conselho quando já vierem preenchidos — o prescritor não edita a
     // própria identidade profissional depois que a equipe já a verificou.
@@ -849,7 +895,7 @@
       document.getElementById('p-whatsapp-consent').checked = !!dados.whatsappConsent;
       if (dados.profissao) document.getElementById('p-profissao').value = dados.profissao;
       document.getElementById('p-conselho').value = dados.conselho || '';
-      document.getElementById('p-data-nascimento').value = dados.dataNascimento || '';
+      document.getElementById('p-data-nascimento').value = isoParaData(dados.dataNascimento);
       document.getElementById('p-cep').value = mascaraCep(dados.enderecoCep || '');
       document.getElementById('p-rua').value = dados.enderecoRua || '';
       document.getElementById('p-numero').value = dados.enderecoNumero || '';
@@ -869,7 +915,7 @@
         whatsappConsent: document.getElementById('p-whatsapp-consent').checked,
         profissao: document.getElementById('p-profissao').value,
         conselho: document.getElementById('p-conselho').value.trim(),
-        dataNascimento: document.getElementById('p-data-nascimento').value,
+        dataNascimento: dataParaIso(document.getElementById('p-data-nascimento').value),
         enderecoCep: document.getElementById('p-cep').value.trim(),
         enderecoRua: document.getElementById('p-rua').value.trim(),
         enderecoNumero: document.getElementById('p-numero').value.trim(),
@@ -894,6 +940,11 @@
       if (!validarCpfCliente(dados.cpf)) {
         showError('profile-error', 'CPF inválido — confira os dígitos.');
         document.getElementById('p-cpf').focus();
+        return;
+      }
+      if (!validarDataCliente(document.getElementById('p-data-nascimento').value)) {
+        showError('profile-error', 'Data de nascimento inválida — confira o dia, mês e ano.');
+        document.getElementById('p-data-nascimento').focus();
         return;
       }
       var btn = document.getElementById('btn-save-profile');
@@ -1093,6 +1144,7 @@
     document.getElementById('p-whatsapp').addEventListener('input', function (e) { e.target.value = mascaraWhatsapp(e.target.value); });
     document.getElementById('p-cep').addEventListener('input', function (e) { e.target.value = mascaraCep(e.target.value); autoPreencherEndereco(); });
     document.getElementById('p-cpf').addEventListener('input', function (e) { e.target.value = mascaraCpf(e.target.value); });
+    document.getElementById('p-data-nascimento').addEventListener('input', function (e) { e.target.value = mascaraData(e.target.value); });
     document.getElementById('btn-save-profile').addEventListener('click', salvarPerfil);
     document.getElementById('coupon-code').addEventListener('input', onCouponInput);
     document.getElementById('btn-reserve-coupon').addEventListener('click', reservarCupomEscolhido);
