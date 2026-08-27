@@ -169,7 +169,7 @@ const EVENTOS = {
                     <p style="margin:0 0 16px;font-size:15px;color:#1C2620;font-weight:700;">Olá, ${nome}!</p>
                     <p style="margin:0 0 20px;font-size:14px;color:#5a6b5e;line-height:1.7;">
                       Recebemos o seu cadastro no programa <strong>Uvits Pro Prescritor</strong>.
-                      Nossa equipe vai validar suas informações e você receberá uma confirmação em até <strong>24 horas úteis</strong>.
+                      Nossa equipe vai validar suas informações e você receberá uma confirmação em breve.
                     </p>
                     <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F1EC;border-radius:10px;padding:20px;margin-bottom:24px;">
                       <tr><td style="padding:6px 0;font-size:13px;color:#5a6b5e;"><strong style="color:#1C2620;">Nome:</strong> ${nome}</td></tr>
